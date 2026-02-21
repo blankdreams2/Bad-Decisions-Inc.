@@ -63,28 +63,27 @@ export function useShakeCounter(
       return false;
     }
 
+    // iOS Safari requires a secure context + user gesture to prompt.
+    if (!window.isSecureContext) {
+      console.warn("Device motion requires a secure context (HTTPS)");
+      return false;
+    }
+
     if (typeof (DeviceMotionEvent as any).requestPermission === "function") {
       try {
         const permissionState = await (
           DeviceMotionEvent as any
         ).requestPermission();
         if (permissionState === "granted") {
-          if (!motionListenerRef.current) {
-            motionListenerRef.current = handleMotion;
-            window.addEventListener("devicemotion", motionListenerRef.current);
-          }
           setIsListening(true);
           return true;
         }
+        setIsListening(false);
       } catch (error) {
         console.error("Error requesting device motion permission:", error);
       }
     } else {
       // For non-iOS devices or older versions, no permission is needed
-      if (!motionListenerRef.current) {
-        motionListenerRef.current = handleMotion;
-        window.addEventListener("devicemotion", motionListenerRef.current);
-      }
       setIsListening(true);
       return true;
     }
@@ -92,13 +91,23 @@ export function useShakeCounter(
   }, [handleMotion]);
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (!isListening) return;
+
+    if (!motionListenerRef.current) {
+      motionListenerRef.current = handleMotion;
+      window.addEventListener("devicemotion", motionListenerRef.current as any, {
+        passive: true,
+      } as any);
+    }
+
     return () => {
       if (motionListenerRef.current) {
-        window.removeEventListener("devicemotion", motionListenerRef.current);
+        window.removeEventListener("devicemotion", motionListenerRef.current as any);
         motionListenerRef.current = null;
       }
     };
-  }, []);
+  }, [isListening, handleMotion]);
 
   const resetCount = useCallback(() => {
     setShakeCount(0);

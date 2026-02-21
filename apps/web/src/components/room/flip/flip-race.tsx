@@ -47,7 +47,6 @@ export function FlipRace({
 
   const [showMotionTrouble, setShowMotionTrouble] = useState(false)
   const [showAllLeaderboard, setShowAllLeaderboard] = useState(false)
-  const didAutoEnableMotionRef = useRef(false)
   const lastPushRef = useRef<{ at: number; count: number }>({ at: 0, count: -1 })
   const didFinalPushRef = useRef(false)
 
@@ -87,17 +86,8 @@ export function FlipRace({
     resetMotionCount()
     setShowMotionTrouble(false)
     lastPushRef.current = { at: 0, count: -1 }
-    didAutoEnableMotionRef.current = false
     didFinalPushRef.current = false
   }, [code, roomStatus, roomStartedAt, resetMotionCount])
-
-  useEffect(() => {
-    if (!canEnableMotion) return
-    if (isMotionListening) return
-    if (didAutoEnableMotionRef.current) return
-    didAutoEnableMotionRef.current = true
-    void requestMotionPermission()
-  }, [canEnableMotion, isMotionListening, requestMotionPermission])
 
   useEffect(() => {
     if (!canEnableMotion || !isMotionListening) {

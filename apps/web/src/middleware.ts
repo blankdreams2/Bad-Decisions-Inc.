@@ -8,7 +8,13 @@ export default clerkMiddleware(async (auth, request) => {
     await auth.protect();
   }
 
-  return NextResponse.next();
+  const response = NextResponse.next();
+  // Allow motion/orientation sensor access (still requires user permission on iOS Safari).
+  response.headers.set(
+    "Permissions-Policy",
+    "accelerometer=(self), gyroscope=(self), magnetometer=(self)"
+  );
+  return response;
 });
 
 export const config = {

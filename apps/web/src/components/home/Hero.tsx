@@ -2,20 +2,38 @@
 
 import { useClerk, useUser } from '@clerk/nextjs'
 import { useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 const Hero = () => {
   const router = useRouter()
   const { user } = useUser()
   const { signOut } = useClerk()
   const [isAnimated, setIsAnimated] = useState(false)
+  const [animationNonce, setAnimationNonce] = useState(0)
+  const replayTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const replayCardsAnimation = () => {
+    if (replayTimerRef.current) {
+      clearTimeout(replayTimerRef.current)
+      replayTimerRef.current = null
+    }
+
+    // Reset to the start position, then re-enable to trigger transitions again.
+    setIsAnimated(false)
+    setAnimationNonce((n) => n + 1)
+    replayTimerRef.current = setTimeout(() => {
+      setIsAnimated(true)
+    }, 50)
+  }
 
   useEffect(() => {
     // Trigger animation after component mounts
-    const timer = setTimeout(() => {
+    replayTimerRef.current = setTimeout(() => {
       setIsAnimated(true)
     }, 100)
-    return () => clearTimeout(timer)
+    return () => {
+      if (replayTimerRef.current) clearTimeout(replayTimerRef.current)
+    }
   }, [])
 
   const cards = [
@@ -103,10 +121,13 @@ const Hero = () => {
 
       {/* cards */}
       <div className="flex justify-center items-center bg-cover bg-center h-36 min-[375px]:h-40 sm:h-52 md:h-60 mt-7 sm:mt-10">
-        <div className="relative w-full h-full flex items-center justify-center [--card-spread:0.42] [--card-scale:0.62] min-[375px]:[--card-spread:0.5] min-[375px]:[--card-scale:0.72] min-[430px]:[--card-spread:0.62] min-[430px]:[--card-scale:0.82] sm:[--card-spread:1] sm:[--card-scale:1]">
+        <div
+          className="relative w-full h-full flex items-center justify-center [--card-spread:0.42] [--card-scale:0.62] min-[375px]:[--card-spread:0.5] min-[375px]:[--card-scale:0.72] min-[430px]:[--card-spread:0.62] min-[430px]:[--card-scale:0.82] sm:[--card-spread:1] sm:[--card-scale:1] cursor-pointer"
+          onClick={replayCardsAnimation}
+        >
           {cards.map((card, index) => (
             <img
-              key={index}
+              key={`${animationNonce}-${index}`}
               src={card.src}
               alt={`card ${index + 1}`}
               className="absolute transition-all duration-700 ease-out"

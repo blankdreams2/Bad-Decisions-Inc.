@@ -48,7 +48,6 @@ export function ShakeRace({
 
   const [showMotionTrouble, setShowMotionTrouble] = useState(false)
   const [showAllLeaderboard, setShowAllLeaderboard] = useState(false)
-  const didAutoEnableMotionRef = useRef(false)
   const lastPushRef = useRef<{ at: number; count: number }>({ at: 0, count: -1 })
   const didFinalPushRef = useRef(false)
 
@@ -91,18 +90,8 @@ export function ShakeRace({
     resetShakeCount()
     setShowMotionTrouble(false)
     lastPushRef.current = { at: 0, count: -1 }
-    didAutoEnableMotionRef.current = false
     didFinalPushRef.current = false
   }, [code, roomStatus, roomStartedAt, resetShakeCount])
-
-  useEffect(() => {
-    if (!canEnableMotion) return
-    if (isMotionListening) return
-    if (didAutoEnableMotionRef.current) return
-
-    didAutoEnableMotionRef.current = true
-    void requestMotionPermission()
-  }, [canEnableMotion, isMotionListening, requestMotionPermission])
 
   useEffect(() => {
     if (!canEnableMotion) {
@@ -208,8 +197,8 @@ export function ShakeRace({
               {!isMotionListening ? (
                 <Button
                   variant="outline"
-                  onClick={async () => {
-                    await requestMotionPermission()
+                  onClick={() => {
+                    void requestMotionPermission()
                   }}
                 >
                   Enable motion
