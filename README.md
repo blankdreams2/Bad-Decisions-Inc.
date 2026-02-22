@@ -129,3 +129,32 @@ cd ../../packages/backend && npx convex deploy --cmd 'cd ../../apps/web && turbo
 There is a vercel.json file in the apps/web directory with this configuration for Vercel.
 
 To install a new package, `cd` into that directory, such as [packages/backend](./packages/backend/), and then run `yarn add mypackage@latest`
+
+
+
+# Extra Questions
+
+Step 5 of devpost submission.
+
+## How does your project solve your proposed problem?
+
+A lot of people waste time arguing over where to go. Bad Decisions Inc offer a solution by playing a 15-second mini-game -- winner picks the spot. Scan a QR code, play, and move on with your night.
+
+## How does your project work in-depth?
+
+Host logs in via Clerk, creates a room on Convex. Players scan a QR code to join -- no signup. Convex streams real-time scores with zero polling. Server-anchored timestamps sync countdowns across devices. 3D scenes render via React Three Fiber
+
+## What makes your project unique?
+
+It uses da phone as a physical game controller -- shake it, flick it, tap it. Five 3D mini-games, all in-browser with zero installs. A table of strangers can be playing within 10 seconds of scanning one QR code
+
+## How effective does your project work as advertised?
+
+All mini-games work end-to-end: host creates room, players join via QR, synced countdown fires, scores update live on a race-track leaderboard, winner is announced. Tested on iOS Safari and Android Chrome.
+
+
+## How does your project relate to the theme?
+
+Vegas is where you settle everything with a gamble. -- our app does the same for group decisions. Casino-coded games (poker chips, dice shaking), gold-and-black aesthetic, and a core loop of play, win, pick the spot.
+
+

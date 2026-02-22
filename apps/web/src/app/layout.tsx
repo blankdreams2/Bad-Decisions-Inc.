@@ -1,10 +1,15 @@
 import type { Metadata } from 'next'
-import { Fredoka } from 'next/font/google'
+import { Inter, Platypi } from 'next/font/google'
 import { cn } from '@/lib/utils'
 import './globals.css'
 import ConvexClientProvider from './convex-client-provider'
 
-const fredoka = Fredoka({ subsets: ['latin'] })
+const inter = Inter({ subsets: ['latin'] })
+
+const platypi = Platypi({
+  subsets: ['latin'],
+  variable: '--font-platypi-var',
+})
 
 export const metadata: Metadata = {
   title: 'Bad Decisions Inc',
@@ -15,7 +20,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body
         className={cn(
-          fredoka.className,
+          inter.className,
+          platypi.variable,
           'bg-[#161616]'
         )}
       >

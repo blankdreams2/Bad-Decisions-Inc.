@@ -10,6 +10,7 @@
   --color-primary: #0d87e1;
 
   --font-inter: Inter, sans-serif;
+  --font-platypi: var(--font-platypi-var), serif;
   --font-lato: Lato, sans-serif;
   --font-montserrat: Montserrat, sans-serif;
   --font-bebas: "Bebas Neue", sans-serif;
@@ -40,6 +41,12 @@
   ::backdrop,
   ::file-selector-button {
     border-color: var(--color-gray-200, currentcolor);
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-platypi-var), serif;
   }
 }
 
