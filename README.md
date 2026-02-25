@@ -1,3 +1,11 @@
+## Demo
+
+<p align="center">
+  <a href="Rebel_Hacks_Draft_Demo.gif">
+    <img src="Rebel_Hacks_Draft_Demo.gif" width="300"/>
+  </a>
+</p>
+
 ## Inspiration
 
 Every friend group in Vegas asks the same questions: "Where should we eat?" "What should we do next?" Nobody wants to decide, everyone has an opinion, and you burn half the night arguing. Vegas is a city built on settling things with a gamble -- so we thought, why not settle group decisions the same way? Instead of doom-scrolling Yelp or doing the painful "I don't care, you pick" dance, we built a platform where you literally wager your say on fast, chaotic mini-games.
@@ -19,11 +27,8 @@ Every round has a synced countdown, live race-track leaderboard, and real-time s
 ## How we built it
 
 - Turborepo monorepo with a Next.js web app and shared backend package
-
 - Convex for the real-time backend -- rooms, players, join requests, and live score syncing all happen through Convex mutations/queries with zero polling
-
 - Clerk for host authentication (players join as guests via QR code, no auth friction)
-
 - React Three Fiber + Three.js for 3D game scenes (beer glasses clinking in Kanpai, poker chip spinning in Tap, chopsticks + falling sushi in Chopstick Catch, pan/egg physics in Flip)
 
 -- Fully mobile-first responsive design with a dark/gold Vegas casino aesthetic
@@ -130,8 +135,6 @@ There is a vercel.json file in the apps/web directory with this configuration fo
 
 To install a new package, `cd` into that directory, such as [packages/backend](./packages/backend/), and then run `yarn add mypackage@latest`
 
-
-
 # Extra Questions
 
 Step 5 of devpost submission.
@@ -152,9 +155,6 @@ It uses da phone as a physical game controller -- shake it, flick it, tap it. Fi
 
 All mini-games work end-to-end: host creates room, players join via QR, synced countdown fires, scores update live on a race-track leaderboard, winner is announced. Tested on iOS Safari and Android Chrome.
 
-
 ## How does your project relate to the theme?
 
 Vegas is where you settle everything with a gamble. -- our app does the same for group decisions. Casino-coded games (poker chips, dice shaking), gold-and-black aesthetic, and a core loop of play, win, pick the spot.
-
-
