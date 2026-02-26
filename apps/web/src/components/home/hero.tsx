@@ -90,7 +90,8 @@ const Hero = () => {
           {/* Hero center */}
           <section className="flex flex-1 flex-col items-center justify-center px-3 sm:px-4">
             <h1 className="text-glow-white text-center font-extrabold italic tracking-tight text-white text-4xl min-[375px]:text-5xl sm:text-6xl md:text-7xl lg:text-8xl">
-              BAD DECISIONS
+              BAD
+              <span className="text-gold"> DECISIONS</span>
             </h1>
             <p className="font-syne mt-1 text-center text-sm tracking-[0.3em] text-white/30 sm:text-base">
               INCORPORATED

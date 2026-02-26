@@ -1,19 +1,22 @@
+'use client'
+
 import { ACCENT_STYLES, GAMES } from '@/data/hero-data'
 import BdiLogo from '@/components/common/bdiLogo'
+import { Pointer } from '@/components/ui/pointer'
 import Link from 'next/link'
 
 const accentBg: Record<string, string> = {
-  neon: 'from-neon/10 to-neon/3',
-  electric: 'from-electric/10 to-electric/3',
-  gold: 'from-gold/10 to-gold/3',
-  royal: 'from-royal/10 to-royal/3',
+  neon: 'bg-neon/8',
+  electric: 'bg-electric/8',
+  gold: 'bg-gold/8',
+  royal: 'bg-royal/8',
 }
 
 const accentNumber: Record<string, string> = {
-  neon: 'text-neon/20',
-  electric: 'text-electric/20',
-  gold: 'text-gold/20',
-  royal: 'text-royal/20',
+  neon: 'text-neon/15',
+  electric: 'text-electric/15',
+  gold: 'text-gold/15',
+  royal: 'text-royal/15',
 }
 
 export default function GamesPage() {
@@ -39,32 +42,38 @@ export default function GamesPage() {
         </Link>
       </nav>
 
-      <header className="container mx-auto shrink-0 px-3 pt-4 pb-2 sm:px-6 sm:pt-6 sm:pb-3">
-        <h1 className="text-glow-white font-syne text-2xl font-extrabold italic tracking-tight text-white sm:text-3xl md:text-4xl">
-          Minigames
-        </h1>
-        <p className="mt-1 max-w-lg text-xs leading-relaxed text-ash/60 sm:text-sm">
-          Five quick-fire challenges. The loser? Well... they make a bad decision.
-        </p>
-      </header>
+      <section className="container mx-auto flex min-h-0 flex-1 flex-col overflow-y-auto px-3 pt-4 pb-4 sm:px-6 sm:pt-6">
+        <div className="shrink-0">
+          <h1 className="text-glow-white font-syne text-2xl font-extrabold italic tracking-tight text-white sm:text-3xl md:text-4xl">
+            Minigames
+          </h1>
+          <p className="mt-1 max-w-lg text-xs leading-relaxed text-ash/60 sm:text-sm">
+            Five quick-fire challenges. The loser? Well... they make a bad decision.
+          </p>
+        </div>
 
-      <section className="container mx-auto min-h-0 flex-1 px-3 py-2 sm:px-6 sm:py-3">
-        <div className="grid h-full auto-rows-fr grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-5">
+        <div className="mt-4 grid flex-1 grid-cols-1 gap-3 min-[480px]:grid-cols-2 sm:mt-5 sm:gap-4 lg:grid-cols-5">
           {GAMES.map((game, i) => {
             const style = ACCENT_STYLES[game.accent]
             return (
               <div
                 key={game.title}
-                className={`group relative overflow-hidden rounded-xl border bg-surface transition-all duration-300 ${style.border} ${style.glow}`}
+                className={`group/card relative flex flex-col overflow-hidden rounded-2xl border bg-surface transition-all duration-300 ${style.border} ${style.glow}`}
               >
-                <div className={`absolute inset-x-0 top-0 h-0.5 bg-linear-to-r ${accentBg[game.accent]}`} />
-                <div className="relative flex h-full flex-col p-3 sm:p-4">
-                  <span className={`font-syne absolute top-2 right-3 text-3xl font-black sm:text-4xl ${accentNumber[game.accent]}`}>
+                <Pointer>
+                  <span className="text-2xl">{game.emoji}</span>
+                </Pointer>
+
+                <div className={`flex flex-1 items-center justify-center py-6 sm:py-8 ${accentBg[game.accent]}`}>
+                  <span className="text-5xl transition-transform duration-300 group-hover/card:scale-125 sm:text-6xl lg:text-7xl">
+                    {game.emoji}
+                  </span>
+                </div>
+
+                <div className="relative shrink-0 p-3 sm:p-4">
+                  <span className={`font-syne absolute top-2 right-3 text-2xl font-black sm:text-3xl ${accentNumber[game.accent]}`}>
                     {String(i + 1).padStart(2, '0')}
                   </span>
-                  <div className={`mb-2 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border sm:mb-3 sm:h-10 sm:w-10 ${style.icon}`}>
-                    <GameIcon index={i} className={style.title} />
-                  </div>
                   <h2 className={`font-syne text-sm font-bold tracking-tight sm:text-base ${style.title}`}>
                     {game.title}
                   </h2>
@@ -88,15 +97,4 @@ export default function GamesPage() {
       </div>
     </div>
   )
-}
-
-function GameIcon({ index, className }: { index: number; className: string }) {
-  const icons = [
-    <svg key="shake" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8V6a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v2" /><path d="M6 16v2a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-2" /><rect x="6" y="8" width="12" height="8" rx="1" /><path d="M2 10l2 2-2 2" /><path d="M22 10l-2 2 2 2" /></svg>,
-    <svg key="flip" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3v18" /><path d="M8 7l4-4 4 4" /><path d="M8 17l4 4 4-4" /></svg>,
-    <svg key="tap" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="6" /><circle cx="12" cy="12" r="2" /></svg>,
-    <svg key="kanpai" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18V5l12-2v13" /><circle cx="6" cy="18" r="3" /><circle cx="18" cy="16" r="3" /></svg>,
-    <svg key="chopstick" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 2l7 20" /><path d="M21 2l-7 20" /></svg>,
-  ]
-  return <span className={className}>{icons[index]}</span>
 }

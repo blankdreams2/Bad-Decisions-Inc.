@@ -4,6 +4,7 @@ export interface Game {
   title: string
   desc: string
   accent: GameAccent
+  emoji: string
   image?: string
 }
 
@@ -12,26 +13,31 @@ export const GAMES: Game[] = [
     title: 'Shake Game',
     desc: 'Rebel Shake: 5-second synced countdown, then full speed phone shaking for 15 seconds.',
     accent: 'neon',
+    emoji: '📱',
   },
   {
     title: 'Flip Game',
     desc: 'Vegas Pan Flip: flick your phone to launch the egg and stack flips on the live race track.',
     accent: 'electric',
+    emoji: '🍳',
   },
   {
     title: 'Tap Tap',
     desc: 'Poker Chip Tap: wait for countdown, then spam taps for the highest score before time runs out.',
     accent: 'gold',
+    emoji: '🎰',
   },
   {
     title: 'Kanpai Timing',
     desc: 'Tap on each beat and lock in the lowest average timing error to win.',
     accent: 'royal',
+    emoji: '🍻',
   },
   {
     title: 'Chopstick Catch',
     desc: 'Catch falling sushi at the right height and stack points before the timer ends.',
     accent: 'electric',
+    emoji: '🥢',
   },
 ]
 
