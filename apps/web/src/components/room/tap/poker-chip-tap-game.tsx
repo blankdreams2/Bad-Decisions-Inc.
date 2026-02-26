@@ -126,7 +126,7 @@ function PokerChipRig({ isActive, tapCount }: { isActive: boolean; tapCount: num
 
 function PokerChipTapScene({ isActive, tapCount }: { isActive: boolean; tapCount: number }) {
   return (
-    <div className="mx-auto h-52 w-full max-w-xs">
+    <div className="mx-auto h-60 w-full max-w-xs">
       <Canvas dpr={[1, 1.5]} gl={{ alpha: true }} camera={{ fov: 36, position: [0, 0.2, 4.15] }}>
         <ambientLight intensity={1.2} />
         <directionalLight position={[2, 4, 3]} intensity={1.1} color="#ffe3be" />
@@ -262,12 +262,12 @@ export function PokerChipTapGame({
 
   return (
     <div className="pt-3 border-t">
-      <div className="relative overflow-hidden rounded-xl border border-[#eab308]/55 bg-[#171a20] p-4 space-y-4 text-white">
-        <div className="rounded-full inline-flex items-center border border-[#eab308]/70 bg-black/30 px-3 py-1 text-xs font-semibold tracking-wide text-[#facc15]">
+      <div className="relative overflow-hidden rounded-xl border border-white/8 bg-surface p-4 space-y-4 text-white">
+        <div className="rounded-full inline-flex items-center border border-white/10 bg-white/5 px-3 py-1 text-xs font-semibold tracking-wide text-white/60">
           BAD DECISIONS INC · {title.toUpperCase()}
         </div>
 
-        <div className="relative rounded-md border border-white/20 bg-black/30 p-3">
+        <div className="relative rounded-md border border-white/8 bg-white/5 p-3">
           <PokerChipTapScene isActive={isRoundRunning || isCountdown} tapCount={taps} />
 
           <button
@@ -280,11 +280,11 @@ export function PokerChipTapGame({
 
           {isCountdown ? (
             <div className="mt-2 text-center">
-              <div className="text-xs uppercase tracking-wide text-[#facc15]">Get ready</div>
-              <div className="text-3xl font-black tabular-nums text-[#fde047]">{countdownDisplay}</div>
+              <div className="text-xs uppercase tracking-wide text-white/50">Get ready</div>
+              <div className="text-3xl font-black tabular-nums text-white">{countdownDisplay}</div>
             </div>
           ) : (
-            <div className="mt-2 text-xs text-[#facc15]">
+            <div className="mt-2 text-xs text-white">
               Tap or click the chip as fast as possible before the timer ends.
             </div>
           )}
@@ -292,13 +292,13 @@ export function PokerChipTapGame({
 
         <div className="space-y-2">
           <div className="flex items-center justify-between gap-3">
-            <div className="text-sm font-medium text-[#facc15]">Chip taps</div>
+            <div className="text-sm font-medium text-white">Chip taps</div>
             <div className="text-xs text-white/80">{gameLabel}</div>
           </div>
 
-          <div className="relative h-2 rounded-md bg-white/10 overflow-hidden border border-white/30">
+          <div className="relative h-2 rounded-md bg-white/10 overflow-hidden border border-white/10">
             <div
-              className="absolute inset-y-0 left-0 bg-[#eab308]"
+              className="absolute inset-y-0 left-0 bg-white"
               style={{
                 width: `${Math.round(roundProgress01 * 1000) / 10}%`,
               }}
@@ -306,24 +306,24 @@ export function PokerChipTapGame({
           </div>
 
           <div className="grid grid-cols-2 gap-2 text-xs">
-            <div className="rounded border border-white/20 bg-black/25 px-3 py-2">
+            <div className="rounded-xl border border-white/8 bg-white/3 px-3 py-2">
               Time
-              <div className="mt-0.5 text-lg font-semibold tabular-nums text-[#facc15]">{secondsLeft}s</div>
+              <div className="mt-0.5 text-lg font-semibold tabular-nums text-white">{secondsLeft}s</div>
             </div>
-            <div className="rounded border border-white/20 bg-black/25 px-3 py-2">
+            <div className="rounded-xl border border-white/8 bg-white/3 px-3 py-2">
               Score
-              <div className="mt-0.5 text-lg font-semibold tabular-nums text-[#facc15]">{taps}</div>
+              <div className="mt-0.5 text-lg font-semibold tabular-nums text-white">{taps}</div>
             </div>
           </div>
         </div>
 
         <div className="flex items-center justify-between gap-3">
           {isRoundOver ? (
-            <div className="text-sm text-[#facc15]">Time! You landed {taps} taps.</div>
+            <div className="text-sm text-white">Time! You landed {taps} taps.</div>
           ) : isCountdown ? (
-            <div className="text-sm text-[#facc15]">{countdownDisplay}s countdown. Then spam tap.</div>
+            <div className="text-sm text-white">{countdownDisplay}s countdown. Then spam tap.</div>
           ) : isRoundRunning ? (
-            <div className="text-sm text-[#facc15]">Keep tapping!</div>
+            <div className="text-sm text-white">Keep tapping!</div>
           ) : (
             <div className="text-sm text-white/80">
               {roomStatus === 'lobby' ? 'Waiting for host to start...' : 'Round ready.'}
@@ -334,8 +334,8 @@ export function PokerChipTapGame({
         </div>
 
         <div className="space-y-2">
-          <div className="flex items-center justify-between gap-2">
-            <div className="text-sm font-medium text-[#facc15]">Race Track Leaderboard</div>
+          <div className="flex items-center justify-between gap-2 pb-5">
+            <div className="text-sm font-medium text-white">Race Track Leaderboard</div>
             <div className="text-xs text-white/80 tabular-nums">
               {isCountdown
                 ? `Starts in ${countdownDisplay}s`
@@ -361,16 +361,16 @@ export function PokerChipTapGame({
                   <div key={p.id} className="space-y-1.5">
                     <div className="flex items-center justify-between gap-2">
                       <div className="flex items-center gap-2 min-w-0">
-                        <div className="text-xs w-5 text-center font-semibold text-[#facc15]">{rank}</div>
+                        <div className="text-xs w-5 text-center font-semibold text-white">{rank}</div>
                         <div className="w-40 text-sm font-semibold truncate text-white">
                           {p.name}
                           {p.isHost ? ' (host)' : ''}
                         </div>
                       </div>
-                      {isRoundOver && <div className="text-xs tabular-nums text-[#facc15]">{p.count} taps</div>}
+                      {isRoundOver && <div className="text-xs tabular-nums text-white">{p.count} taps</div>}
                     </div>
 
-                    <div className="relative h-10 rounded-md bg-white/10 overflow-hidden border border-white/30">
+                    <div className="relative h-10 rounded-md bg-white/10 overflow-hidden border border-white/10">
                       <div
                         className="absolute inset-y-0 left-0 rounded-r-md"
                         style={{
@@ -410,13 +410,13 @@ export function PokerChipTapGame({
         </div>
 
         {isRoundOver && winnerBannerText && (
-          <div className="border border-[#eab308]/70 rounded-md bg-black/30 p-3 text-center animate-pulse">
+          <div className="border border-white/10 rounded-xl bg-white/5 p-3 text-center animate-pulse">
             <div className="text-sm font-medium">{winnerBannerText}</div>
           </div>
         )}
 
         {isRoundRunning && (
-          <div className="border border-fuchsia-300/50 rounded-md bg-black/30 p-3 text-center font-medium animate-pulse">
+          <div className="border border-white/15 rounded-xl bg-white/5 text-white font-bold p-3 text-center animate-pulse">
             TAP TAP TAP!!
           </div>
         )}

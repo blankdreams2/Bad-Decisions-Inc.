@@ -15,9 +15,5 @@
   "engines": {
     "node": ">=20.19.4"
   },
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ],
-  "packageManager": "yarn@1.22.22"
+  "packageManager": "pnpm@10.11.0"
 }

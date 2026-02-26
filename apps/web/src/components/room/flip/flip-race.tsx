@@ -138,27 +138,27 @@ export function FlipRace({
 
   return (
     <div className="pt-3 border-t">
-      <div className="relative overflow-hidden rounded-xl border border-[#eab308]/55 bg-[#171a20] p-4 space-y-4 text-white">
-        <div className="rounded-full inline-flex items-center border border-[#eab308]/70 bg-black/30 px-3 py-1 text-xs font-semibold tracking-wide text-[#facc15]">
+      <div className="relative overflow-hidden rounded-xl border border-white/8 bg-surface p-4 space-y-4 text-white">
+        <div className="rounded-full inline-flex items-center border border-white/10 bg-white/5 px-3 py-1 text-xs font-semibold tracking-wide text-white/60">
           BAD DECISIONS INC · VEGAS PAN FLIP
         </div>
 
-        <div className="rounded-md border border-white/20 bg-black/30 p-3">
+        <div className="rounded-md border border-white/8 bg-white/5 p-3">
           <PanEggScene isActive={isRoundRunning} flipCount={shakeCount} />
-          <div className="mt-2 text-xs text-[#facc15]">
+          <div className="mt-2 text-xs text-white">
             Flick your phone up and down to flip the egg. Keep it in the pan.
           </div>
         </div>
 
         <div className="space-y-2">
           <div className="flex items-center justify-between gap-3">
-            <div className="text-sm font-medium text-[#facc15]">Flip</div>
+            <div className="text-sm font-medium text-white">Flip</div>
             <div className="text-xs text-white/80">{roomStatus === 'playing' ? 'LIVE' : roomStatus.toUpperCase()}</div>
           </div>
 
-          <div className="relative h-2 rounded-md bg-white/10 overflow-hidden border border-white/30">
+          <div className="relative h-2 rounded-md bg-white/10 overflow-hidden border border-white/10">
             <div
-              className="absolute inset-y-0 left-0 bg-[#eab308]"
+              className="absolute inset-y-0 left-0 bg-white"
               style={{ width: `${Math.round((roomStatus === 'finished' ? 1 : round.progress01) * 1000) / 10}%` }}
             />
           </div>
@@ -190,9 +190,9 @@ export function FlipRace({
             </div>
 
             {isCountdown && (
-              <div className="rounded-md border border-[#eab308]/70 bg-black/40 p-4 text-center">
-                <div className="text-xs uppercase tracking-wide text-[#facc15]">Set your pan</div>
-                <div className="text-4xl font-black tabular-nums text-[#fde047]">{countdownDisplaySeconds}</div>
+              <div className="rounded-md border border-white/15 bg-white/5 p-4 text-center">
+                <div className="text-xs uppercase tracking-wide text-white/50">Set your pan</div>
+                <div className="text-4xl font-black tabular-nums text-white">{countdownDisplaySeconds}</div>
               </div>
             )}
 
@@ -206,8 +206,8 @@ export function FlipRace({
             )}
 
             <div className="space-y-2">
-              <div className="flex items-center justify-between gap-2">
-                <div className="text-sm font-medium text-[#facc15]">Race Track Leaderboard</div>
+              <div className="flex items-center justify-between gap-2 pb-5">
+                <div className="text-sm font-medium text-white">Race Track Leaderboard</div>
                 <div className="text-xs text-white/80 tabular-nums">
                   {isCountdown
                     ? `Starts in ${countdownDisplaySeconds}s`
@@ -233,16 +233,16 @@ export function FlipRace({
                       <div key={p.id} className="space-y-1.5">
                         <div className="flex items-center justify-between gap-2">
                           <div className="flex items-center gap-2 min-w-0">
-                            <div className="text-xs w-5 text-center font-semibold text-[#facc15]">{rank}</div>
+                            <div className="text-xs w-5 text-center font-semibold text-white">{rank}</div>
                             <div className="w-40 text-sm font-semibold truncate text-white">
                               {p.name}
                               {p.isHost ? ' (host)' : ''}
                             </div>
                           </div>
-                          {isRoundOver && <div className="text-xs tabular-nums text-[#facc15]">{p.count} flips</div>}
+                          {isRoundOver && <div className="text-xs tabular-nums text-white">{p.count} flips</div>}
                         </div>
 
-                        <div className="relative h-10 rounded-md bg-white/10 overflow-hidden border border-white/30">
+                        <div className="relative h-10 rounded-md bg-white/10 overflow-hidden border border-white/10">
                           <div
                             className="absolute inset-y-0 left-0 rounded-r-md"
                             style={{
@@ -281,7 +281,7 @@ export function FlipRace({
             </div>
 
             {isRoundOver && winnerBannerText && (
-              <div className="border border-[#eab308]/70 rounded-md bg-black/30 p-3 text-center animate-pulse">
+              <div className="border border-white/10 rounded-xl bg-white/5 p-3 text-center animate-pulse">
                 <div className="text-sm font-medium">{winnerBannerText}</div>
               </div>
             )}

@@ -6,15 +6,17 @@ import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import { useEffect, useMemo, useState } from 'react'
 
+import BdiLogo from '@/components/common/bdiLogo'
 import { Button } from '@/components/common/button'
-import { avatarKeyForPlayer } from '@/lib/preset-avatar'
-import { ChopstickCatchGame } from '@/components/room/chopstick/chopstick-catch-game'
+import { ChopstickCatch } from '@/components/room/chopstick/chopstick-catch-game'
 import { FlipRace } from '@/components/room/flip/flip-race'
-import { KanpaiTimingGame } from '@/components/room/kanpai/kanpai-timing-game'
-import { ShakeRace } from '@/components/room/shake/shake-race'
-import { PokerChipTapGame } from '@/components/room/tap/poker-chip-tap-game'
+import { KanpaiTiming } from '@/components/room/kanpai/kanpai-timing-game'
+import { RebelShake } from '@/components/room/shake/rebel-shake'
 import { RoomPlayerAvatar } from '@/components/room/shared/room-player-avatar'
+import { PokerChipTapGame } from '@/components/room/tap/poker-chip-tap-game'
+import { GAME_META, type Game } from '@/data/game-meta'
 import { VEGAS_VENUES, type RewardMode, type VegasVenue } from '@/data/vegas-options'
+import { avatarKeyForPlayer } from '@/lib/preset-avatar'
 import { api } from '@packages/backend/convex/_generated/api'
 
 function makeGuestId() {
@@ -72,6 +74,8 @@ export default function RoomPage() {
   const [didUpsertHost, setDidUpsertHost] = useState(false)
   const [isChoosingOutcome, setIsChoosingOutcome] = useState(false)
   const [partyOutcomeError, setPartyOutcomeError] = useState<string | null>(null)
+  const [stagedVenueId, setStagedVenueId] = useState<string | null>(null)
+  const [stagedPunishment, setStagedPunishment] = useState<string | null>(null)
 
   const hostName = useMemo(() => {
     if (!user) return 'Host'
@@ -96,15 +100,8 @@ export default function RoomPage() {
     void upsertHostForRoom({ code, name: hostName })
   }, [user, isHost, code, didUpsertHost, upsertHostForRoom, hostName])
 
-  const gameLabel = useMemo(() => {
-    if (!room) return ''
-    if (room.game === 'shake') return 'Rebel Shake'
-    if (room.game === 'flip') return 'Vegas Pan Flip'
-    if (room.game === 'tap') return 'Poker Chip Tap'
-    if (room.game === 'kanpai') return 'Kanpai Timing'
-    if (room.game === 'chopstick') return 'Chopstick Catch'
-    return 'unknown'
-  }, [room])
+  const gameMeta = room ? (GAME_META[room.game as Game] ?? GAME_META.shake) : GAME_META.shake
+  const gameLabel = room ? gameMeta.label : ''
 
   const roomStartedAt = useMemo(() => {
     const startedAt = (room as any)?.state?.startedAt
@@ -193,7 +190,14 @@ export default function RoomPage() {
 
   useEffect(() => {
     if (!room) return
-    if (room.game !== 'shake' && room.game !== 'flip' && room.game !== 'tap' && room.game !== 'kanpai' && room.game !== 'chopstick') return
+    if (
+      room.game !== 'shake' &&
+      room.game !== 'flip' &&
+      room.game !== 'tap' &&
+      room.game !== 'kanpai' &&
+      room.game !== 'chopstick'
+    )
+      return
     if (!user) return
     if (!isHost) return
     if (room.status !== 'playing') return
@@ -269,58 +273,59 @@ export default function RoomPage() {
     }
   }
 
+  const isActive = room ? room.status === 'lobby' || room.status === 'playing' : false
+
   return (
-    <main className="min-h-dvh p-4 bg-[#0f1115]">
-      <div className="max-w-md w-full mx-auto space-y-4 text-white">
-        <div className="space-y-2">
-          <h1 className="text-2xl font-semibold text-[#facc15]">Room {code}</h1>
-          <div className="inline-flex rounded-full border border-[#eab308]/70 bg-[#eab308]/15 px-3 py-1 text-xs text-[#facc15]">
-            Bad Decisions Inc · {room ? gameLabel : '…'}
+    <main className="min-h-dvh bg-midnight">
+      {/* ── top bar ── */}
+      <header className="sticky top-0 z-30 border-b border-white/5 bg-midnight/80 backdrop-blur-xl">
+        <div className="mx-auto flex max-w-md items-center justify-between px-4 py-3">
+          <div className="flex items-center gap-2">
+            <BdiLogo multicolor size={22} />
+            <span className="font-syne text-xs font-bold tracking-wide text-white">Room {code}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-medium ${isActive ? 'bg-green-500/10 text-green-400' : 'bg-white/5 text-white/25'}`}>
+              {room?.status ?? '...'}
+            </span>
+            <span className={`inline-flex rounded-full border border-white/10 bg-white/5 px-2.5 py-0.5 text-[10px] text-white/40`}>
+              {room ? gameLabel : '...'}
+            </span>
           </div>
         </div>
+      </header>
 
+      <div className="mx-auto max-w-md px-4 pb-8">
         {!room ? (
-          <div className="text-sm text-white/70">Loading room…</div>
+          <div className="flex min-h-[50dvh] items-center justify-center">
+            <div className="h-6 w-6 animate-spin rounded-full border-2 border-white/20 border-t-white" />
+          </div>
         ) : (
-          <section className="border border-white/20 bg-black/25 rounded-md p-4 space-y-4 backdrop-blur-sm">
+          <section className="mt-4 space-y-4 text-white">
+            {/* players */}
             <div className="space-y-2">
-              <div className="text-sm text-white/80">Players</div>
+              <div className="text-[11px] font-medium text-white/30 uppercase tracking-widest">Players</div>
               {!players ? (
-                <div className="text-sm text-white/70">Loading players…</div>
+                <div className="text-xs text-white/30">Loading players...</div>
               ) : (
                 <div className="flex flex-wrap items-center gap-2">
                   {(players.length === 0 && user && isHost
-                    ? [
-                        {
-                          _id: 'host-local' as any,
-                          name: hostName,
-                          isHost: true,
-                        },
-                      ]
+                    ? [{ _id: 'host-local' as any, name: hostName, isHost: true }]
                     : players
                   ).map((p) => (
-                    <div
-                      key={p._id}
-                      className="flex items-center gap-2 rounded-full border border-white/30 px-2 py-1 bg-white/10"
-                    >
-                      <RoomPlayerAvatar name={p.name} avatarKey={avatarKeyForPlayer(p as any)} className="h-8 w-8" />
-                      <div className="text-sm font-medium whitespace-nowrap">
-                        {p.name}
-                        {p.isHost ? ' (host)' : ''}
-                      </div>
+                    <div key={p._id} className="flex items-center gap-2 rounded-full border border-white/8 bg-white/5 px-2.5 py-1">
+                      <RoomPlayerAvatar name={p.name} avatarKey={avatarKeyForPlayer(p as any)} className="h-6 w-6" />
+                      <span className="text-xs font-medium text-white/70">
+                        {p.name}{p.isHost ? ' (host)' : ''}
+                      </span>
                     </div>
                   ))}
                 </div>
               )}
             </div>
 
-            <div className="flex items-center justify-between">
-              <div className="text-sm text-white/80">Status</div>
-              <div className="text-sm font-medium">{room.status}</div>
-            </div>
-
             {room.game === 'shake' && (
-              <ShakeRace
+              <RebelShake
                 code={code}
                 roomStatus={room.status}
                 roomStartedAt={roomStartedAt}
@@ -334,35 +339,35 @@ export default function RoomPage() {
               />
             )}
 
-          {room.game === 'kanpai' && (
-            <KanpaiTimingGame
-              code={code}
-              roomStatus={room.status}
-              roomStartedAt={roomStartedAt}
-              roomCountdownStartedAt={roomCountdownStartedAt}
-              roomCountdownMs={roomCountdownMs}
-              players={players}
-              isHostUser={isHostUser}
-              isApprovedGuest={isApprovedGuest}
-              guestId={guestId}
-              durationMs={shakeDurationMs}
-            />
-          )}
+            {room.game === 'kanpai' && (
+              <KanpaiTiming
+                code={code}
+                roomStatus={room.status}
+                roomStartedAt={roomStartedAt}
+                roomCountdownStartedAt={roomCountdownStartedAt}
+                roomCountdownMs={roomCountdownMs}
+                players={players}
+                isHostUser={isHostUser}
+                isApprovedGuest={isApprovedGuest}
+                guestId={guestId}
+                durationMs={shakeDurationMs}
+              />
+            )}
 
-          {room.game === 'chopstick' && (
-            <ChopstickCatchGame
-              code={code}
-              roomStatus={room.status}
-              roomStartedAt={roomStartedAt}
-              roomCountdownStartedAt={roomCountdownStartedAt}
-              roomCountdownMs={roomCountdownMs}
-              players={players}
-              isHostUser={isHostUser}
-              isApprovedGuest={isApprovedGuest}
-              guestId={guestId}
-              durationMs={shakeDurationMs}
-            />
-          )}
+            {room.game === 'chopstick' && (
+              <ChopstickCatch
+                code={code}
+                roomStatus={room.status}
+                roomStartedAt={roomStartedAt}
+                roomCountdownStartedAt={roomCountdownStartedAt}
+                roomCountdownMs={roomCountdownMs}
+                players={players}
+                isHostUser={isHostUser}
+                isApprovedGuest={isApprovedGuest}
+                guestId={guestId}
+                durationMs={shakeDurationMs}
+              />
+            )}
 
             {room.game === 'flip' && (
               <FlipRace
@@ -394,165 +399,205 @@ export default function RoomPage() {
               />
             )}
 
-            {shouldShowOutcomePanel && partySetup && (
-            <div className="space-y-3 border border-[#eab308]/60 bg-black/35 rounded-xl p-4">
-                <div className="flex items-center justify-between gap-2">
-                <div className="text-sm font-semibold text-[#facc15]">Prize / Punishment</div>
-                  {isOutcomeLocked ? (
-                    <div className="rounded-full border border-emerald-300/50 bg-emerald-200/15 px-2 py-0.5 text-[11px] text-emerald-200">
-                      Locked
-                    </div>
-                  ) : (
-                  <div className="rounded-full border border-[#eab308]/70 bg-[#eab308]/20 px-2 py-0.5 text-[11px] text-[#facc15]">
-                      Winner picks
-                    </div>
-                  )}
-                </div>
-                {standings[0] ? (
-                  <div className="text-xs text-white/80">
-                  Winner: <span className="font-semibold text-[#facc15]">{standings[0].player.name}</span>
-                    {winnerIds.length > 1 ? ` (+${winnerIds.length - 1} tie)` : ''}
-                  </div>
-                ) : (
-                  <div className="text-xs text-white/70">No scores yet.</div>
-                )}
+            {shouldShowOutcomePanel &&
+              partySetup &&
+              (() => {
+                const isCombo = partySetup.rewardMode === 'combo'
+                const showVenues = (partySetup.rewardMode === 'venue' || isCombo) && setupVenues.length > 0
+                const showPunishments =
+                  (partySetup.rewardMode === 'punishment' || isCombo) && (partySetup.punishmentCards ?? []).length > 0
+                const comboReady = isCombo ? Boolean(stagedVenueId && stagedPunishment) : true
 
-                {(partySetup.rewardMode === 'venue' || partySetup.rewardMode === 'combo') && setupVenues.length > 0 && (
-                  <div className="space-y-1">
-                    <div className="text-xs text-white/70">Venue choices</div>
-                    <div className="grid grid-cols-1 gap-2">
-                      {setupVenues.map((venue) => (
-                        <button
-                          key={venue!.id}
-                          type="button"
-                          className="text-left rounded-md border border-white/25 bg-black/20 px-2 py-2 hover:bg-black/35 disabled:opacity-50 disabled:cursor-not-allowed"
-                          disabled={!canChooseOutcome || isChoosingOutcome}
-                          onClick={() => onChooseOutcome({ selectedVenueId: venue!.id })}
-                        >
-                          <div className="text-sm font-medium">{venue!.name}</div>
-                          <div className="text-xs text-white/70">
-                            {venue!.area} · {venue!.vibe}
-                          </div>
-                        </button>
-                      ))}
+                return (
+                  <div className="space-y-3 rounded-xl border border-white/10 bg-surface p-4">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="text-sm font-semibold text-white">Prize / Punishment</div>
+                      {isOutcomeLocked ? (
+                        <div className="rounded-full border border-emerald-300/50 bg-emerald-200/15 px-2 py-0.5 text-[11px] text-emerald-200">
+                          Locked
+                        </div>
+                      ) : (
+                        <div className="rounded-full border border-white/15 bg-white/5 px-2 py-0.5 text-[11px] text-white/50">
+                          Winner picks
+                        </div>
+                      )}
                     </div>
-                  </div>
-                )}
 
-                {(partySetup.rewardMode === 'punishment' || partySetup.rewardMode === 'combo') &&
-                  (partySetup.punishmentCards ?? []).length > 0 && (
-                    <div className="space-y-1">
-                      <div className="text-xs text-white/70">Punishment cards</div>
-                      <div className="grid grid-cols-1 gap-2">
-                        {(partySetup.punishmentCards ?? []).map((card) => (
-                          <button
-                            key={card}
-                            type="button"
-                            className="text-left rounded-md border border-white/25 bg-black/20 px-2 py-2 hover:bg-black/35 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                            disabled={!canChooseOutcome || isChoosingOutcome}
-                            onClick={() => onChooseOutcome({ selectedPunishment: card })}
-                          >
-                            {card}
-                          </button>
-                        ))}
+                    {standings[0] ? (
+                      <div className="text-xs text-white/60">
+                        Winner: <span className="font-semibold text-white">{standings[0].player.name}</span>
+                        {winnerIds.length > 1 ? ` (+${winnerIds.length - 1} tie)` : ''}
                       </div>
-                    </div>
-                  )}
+                    ) : (
+                      <div className="text-xs text-white/40">No scores yet.</div>
+                    )}
 
-                {partyOutcome?.selectedVenueId && (() => {
-                  const chosenVenue = setupVenues.find((v) => v!.id === partyOutcome.selectedVenueId)
-                  return (
-                    <div className="text-xs rounded-md border border-emerald-300/40 bg-emerald-200/10 px-2 py-1">
-                      Chosen venue:{' '}
-                      <a
-                        className="underline text-emerald-200"
-                        href={chosenVenue?.mapsUrl || '#'}
-                        target="_blank"
-                        rel="noreferrer"
+                    {showVenues && !isOutcomeLocked && (
+                      <div className="space-y-1.5">
+                        <div className="text-[11px] text-white/40">Pick a venue</div>
+                        <div className="grid grid-cols-1 gap-2">
+                          {setupVenues.map((venue) => {
+                            const isStaged = stagedVenueId === venue!.id
+                            return (
+                              <button
+                                key={venue!.id}
+                                type="button"
+                                className={`text-left rounded-xl border px-3 py-2.5 transition-all disabled:cursor-not-allowed disabled:opacity-40 ${
+                                  isStaged
+                                    ? 'border-white/20 bg-white/10'
+                                    : 'border-white/8 bg-white/2 hover:bg-white/5'
+                                }`}
+                                disabled={!canChooseOutcome || isChoosingOutcome}
+                                onClick={() => {
+                                  if (isCombo) {
+                                    setStagedVenueId(isStaged ? null : venue!.id)
+                                  } else {
+                                    void onChooseOutcome({ selectedVenueId: venue!.id })
+                                  }
+                                }}
+                              >
+                                <div className="text-xs font-medium text-white/80">{venue!.name}</div>
+                                <div className="text-[10px] text-white/30">
+                                  {venue!.area} · {venue!.vibe}
+                                </div>
+                              </button>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    )}
+
+                    {showPunishments && !isOutcomeLocked && (
+                      <div className="space-y-1.5">
+                        <div className="text-[11px] text-white/40">Pick a punishment</div>
+                        <div className="grid grid-cols-1 gap-2">
+                          {(partySetup.punishmentCards ?? []).map((card) => {
+                            const isStaged = stagedPunishment === card
+                            return (
+                              <button
+                                key={card}
+                                type="button"
+                                className={`text-left rounded-xl border px-3 py-2.5 text-xs transition-all disabled:cursor-not-allowed disabled:opacity-40 ${
+                                  isStaged
+                                    ? 'border-white/20 bg-white/10'
+                                    : 'border-white/8 bg-white/2 hover:bg-white/5'
+                                }`}
+                                disabled={!canChooseOutcome || isChoosingOutcome}
+                                onClick={() => {
+                                  if (isCombo) {
+                                    setStagedPunishment(isStaged ? null : card)
+                                  } else {
+                                    void onChooseOutcome({ selectedPunishment: card })
+                                  }
+                                }}
+                              >
+                                <span className="text-white/60">{card}</span>
+                              </button>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    )}
+
+                    {isCombo && canChooseOutcome && !isOutcomeLocked && (
+                      <button
+                        type="button"
+                        disabled={!comboReady || isChoosingOutcome}
+                        onClick={() => {
+                          if (!stagedVenueId || !stagedPunishment) return
+                          void onChooseOutcome({ selectedVenueId: stagedVenueId, selectedPunishment: stagedPunishment })
+                        }}
+                        className="w-full rounded-xl bg-white py-2.5 text-sm font-semibold text-midnight transition-all hover:bg-white/90 disabled:opacity-30"
                       >
-                        {chosenVenue?.name ?? partyOutcome.selectedVenueId}
-                      </a>
-                    </div>
-                  )
-                })()}
-                {partyOutcome?.selectedPunishment && (
-                  <div className="text-xs rounded-md border border-rose-300/40 bg-rose-200/10 px-2 py-1">
-                    Chosen punishment: {partyOutcome.selectedPunishment}
-                  </div>
-                )}
+                        {isChoosingOutcome ? 'Locking...' : 'Lock choices'}
+                      </button>
+                    )}
 
-                {!canChooseOutcome && !isOutcomeLocked && (
-                  <div className="text-xs text-white/70">
-                    Only winner{winnerIds.length > 1 ? 's' : ''} can choose:{' '}
-                  <span className="text-[#facc15]">{winnerNames || 'No winner yet'}</span>
-                  </div>
-                )}
-                {isOutcomeLocked && (
-                  <div className="text-xs text-emerald-200">Choice is locked and cannot be changed.</div>
-                )}
-                {partyOutcomeError && <div className="text-xs text-rose-200">{partyOutcomeError}</div>}
-              </div>
-            )}
+                    {partyOutcome?.selectedVenueId &&
+                      (() => {
+                        const chosenVenue = setupVenues.find((v) => v!.id === partyOutcome.selectedVenueId)
+                        return (
+                          <div className="rounded-xl border border-emerald-300/20 bg-emerald-200/5 px-3 py-2 text-xs">
+                            Chosen venue:{' '}
+                            <a
+                              className="font-medium text-emerald-300 underline"
+                              href={chosenVenue?.mapsUrl || '#'}
+                              target="_blank"
+                              rel="noreferrer"
+                            >
+                              {chosenVenue?.name ?? partyOutcome.selectedVenueId}
+                            </a>
+                          </div>
+                        )
+                      })()}
+                    {partyOutcome?.selectedPunishment && (
+                      <div className="rounded-xl border border-rose-300/20 bg-rose-200/5 px-3 py-2 text-xs text-rose-300">
+                        Chosen punishment: {partyOutcome.selectedPunishment}
+                      </div>
+                    )}
 
-            {/* Host controls (host is also a player) */}
+                    {!canChooseOutcome && !isOutcomeLocked && (
+                      <div className="text-xs text-white/40">
+                        Only winner{winnerIds.length > 1 ? 's' : ''} can choose:{' '}
+                        <span className="text-white/60">{winnerNames || 'No winner yet'}</span>
+                      </div>
+                    )}
+                    {isOutcomeLocked && (
+                      <div className="text-xs text-emerald-300">Choice is locked and cannot be changed.</div>
+                    )}
+                    {partyOutcomeError && <div className="text-xs text-neon">{partyOutcomeError}</div>}
+                  </div>
+                )
+              })()}
+
+            {/* Host controls */}
             {user && isHost && (
-              <div className="space-y-3">
+              <div className="space-y-4 rounded-2xl border border-white/8 bg-surface p-4">
                 <div className="flex items-center justify-between gap-3">
-                  <div className="text-sm font-medium">Host</div>
+                  <span className="text-[11px] font-medium text-white/30 uppercase tracking-widest">Host Controls</span>
                   {room.status === 'lobby' && (
                     <Button onClick={onStartPlaying} disabled={isStarting}>
-                      {isStarting ? 'Starting…' : 'Start playing'}
+                      {isStarting ? 'Starting...' : 'Start Game'}
                     </Button>
                   )}
                   {room.status !== 'lobby' && (
                     <Button variant="outline" onClick={onRestartGame} disabled={isRestarting}>
-                      {isRestarting ? 'Restarting…' : 'Restart'}
+                      {isRestarting ? 'Restarting...' : 'Restart'}
                     </Button>
                   )}
                 </div>
 
                 <div className="space-y-2">
-                  <div className="text-sm font-medium">Waiting to enter</div>
+                  <span className="text-[11px] text-white/30">Waiting to enter</span>
                   {!pending ? (
-                    <div className="text-sm text-white/70">Loading requests…</div>
+                    <p className="text-xs text-white/20">Loading requests...</p>
                   ) : pending.length === 0 ? (
-                    <div className="text-sm text-white/70">No pending requests.</div>
+                    <p className="text-xs text-white/20">No pending requests.</p>
                   ) : (
                     <div className="space-y-2">
                       {pending.map((req) => (
-                        <div
-                          key={req._id}
-                          className="flex items-center justify-between gap-2 border border-white/30 rounded-md p-2 bg-white/5"
-                        >
+                        <div key={req._id} className="flex items-center justify-between gap-2 rounded-xl border border-white/8 bg-white/3 p-2.5">
                           <div className="flex items-center gap-2 min-w-0">
-                            <RoomPlayerAvatar name={req.name} avatarKey={String(req._id)} className="h-8 w-8" />
-                            <div className="text-sm font-medium truncate">{req.name}</div>
+                            <RoomPlayerAvatar name={req.name} avatarKey={String(req._id)} className="h-7 w-7" />
+                            <span className="text-xs font-medium truncate text-white/70">{req.name}</span>
                           </div>
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-1.5">
                             <Button
                               size="sm"
                               onClick={async () => {
-                                try {
-                                  setIsActingOnRequest(req._id)
-                                  await approve({ requestId: req._id })
-                                } finally {
-                                  setIsActingOnRequest(null)
-                                }
+                                try { setIsActingOnRequest(req._id); await approve({ requestId: req._id }) }
+                                finally { setIsActingOnRequest(null) }
                               }}
                               disabled={isActingOnRequest === req._id}
                             >
-                              {isActingOnRequest === req._id ? '…' : 'Approve'}
+                              {isActingOnRequest === req._id ? '...' : 'Approve'}
                             </Button>
                             <Button
                               size="sm"
                               variant="outline"
                               onClick={async () => {
-                                try {
-                                  setIsActingOnRequest(req._id)
-                                  await deny({ requestId: req._id })
-                                } finally {
-                                  setIsActingOnRequest(null)
-                                }
+                                try { setIsActingOnRequest(req._id); await deny({ requestId: req._id }) }
+                                finally { setIsActingOnRequest(null) }
                               }}
                               disabled={isActingOnRequest === req._id}
                             >
@@ -567,52 +612,46 @@ export default function RoomPage() {
               </div>
             )}
 
-            {/* Guest waiting room (no login) */}
+            {/* Guest waiting room */}
             {(!user || !isHost) && (
-              <div className="space-y-3">
-                <div className="text-sm font-medium">
-                  {myJoinRequest?.status === 'approved' ? 'You are in the game' : 'Waiting room'}
-                </div>
+              <div className="rounded-2xl border border-white/8 bg-surface p-4 space-y-3">
+                <span className="text-[11px] font-medium text-white/30 uppercase tracking-widest">
+                  {myJoinRequest?.status === 'approved' ? 'You are in' : 'Join Room'}
+                </span>
 
                 {myJoinRequest?.status === 'approved' ? (
                   <div className="space-y-2">
                     <div className="flex items-center gap-2">
-                      <RoomPlayerAvatar name={myJoinRequest.name} avatarKey={myPlayerAvatarKey} className="h-8 w-8" />
-                      <div className="text-sm font-medium">{myJoinRequest.name}</div>
+                      <RoomPlayerAvatar name={myJoinRequest.name} avatarKey={myPlayerAvatarKey} className="h-7 w-7" />
+                      <span className="text-xs font-medium text-white/70">{myJoinRequest.name}</span>
                     </div>
-                    <div className="text-sm text-white/70">
-                      {room?.status === 'playing' ? 'Game started. Get ready!' : 'Approved. Waiting for the host countdown.'}
-                    </div>
+                    <p className="text-xs text-white/30">
+                      {room?.status === 'playing' ? 'Game started. Get ready!' : 'Approved. Waiting for host countdown.'}
+                    </p>
                   </div>
                 ) : myJoinRequest?.status === 'pending' ? (
                   <div className="space-y-2">
                     <div className="flex items-center gap-2">
-                      <RoomPlayerAvatar name={myJoinRequest.name} avatarKey={myPlayerAvatarKey} className="h-8 w-8" />
-                      <div className="text-sm font-medium">{myJoinRequest.name}</div>
+                      <RoomPlayerAvatar name={myJoinRequest.name} avatarKey={myPlayerAvatarKey} className="h-7 w-7" />
+                      <span className="text-xs font-medium text-white/70">{myJoinRequest.name}</span>
                     </div>
-                    <div className="text-sm text-white/70">Requested. Waiting for host approval…</div>
+                    <p className="text-xs text-white/30">Requested. Waiting for host approval...</p>
                   </div>
                 ) : (
-                  <div className="space-y-2">
-                    <label className="text-sm text-white/80" htmlFor="name">
-                      Your name
-                    </label>
+                  <div className="space-y-3">
                     <input
                       id="name"
-                      className="w-full border border-white/30 bg-white/10 rounded-md px-3 h-10 placeholder:text-white/50"
-                      placeholder="Type your name"
+                      className="h-9 w-full rounded-lg border border-white/10 bg-white/5 px-3 text-sm text-white outline-none placeholder:text-white/20 focus:border-white/20"
+                      placeholder="Your name"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') onRequestToJoin()
-                      }}
+                      onKeyDown={(e) => { if (e.key === 'Enter') onRequestToJoin() }}
                     />
-                    <Button onClick={onRequestToJoin} disabled={isRequesting || !name.trim() || !guestId}>
-                      {isRequesting ? 'Requesting…' : 'Enter room'}
+                    <Button onClick={onRequestToJoin} disabled={isRequesting || !name.trim() || !guestId} className="w-full">
+                      {isRequesting ? 'Requesting...' : 'Enter Room'}
                     </Button>
-
                     {myJoinRequest?.status === 'denied' && (
-                      <div className="text-sm text-white/70">Not approved. You can request again.</div>
+                      <p className="text-xs text-white/30">Not approved. You can request again.</p>
                     )}
                   </div>
                 )}
@@ -622,9 +661,11 @@ export default function RoomPage() {
         )}
 
         {user && isHost && (
-          <Link className="text-sm underline text-[#facc15]" href={`/host/rooms/${code}`}>
-            Back
-          </Link>
+          <div className="mt-6 text-center">
+            <Link className="text-xs text-white/25 transition-colors hover:text-white/50" href={`/host/rooms/${code}`}>
+              Back to room settings
+            </Link>
+          </div>
         )}
       </div>
     </main>
