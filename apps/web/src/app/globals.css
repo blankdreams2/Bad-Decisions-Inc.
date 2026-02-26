@@ -45,6 +45,14 @@
   text-shadow: 0 0 8px rgba(245, 184, 0, 0.9), 0 0 20px rgba(245, 184, 0, 0.6), 0 0 40px rgba(245, 184, 0, 0.3);
 }
 
+@utility text-glow-white {
+  text-shadow:
+    0 0 10px rgba(255, 255, 255, 0.9),
+    0 0 30px rgba(255, 255, 255, 0.5),
+    0 0 60px rgba(255, 255, 255, 0.3),
+    0 0 100px rgba(200, 220, 255, 0.15);
+}
+
 @layer base {
 
   *,

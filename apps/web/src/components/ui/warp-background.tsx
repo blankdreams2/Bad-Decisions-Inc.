@@ -16,6 +16,13 @@ interface WarpBackgroundProps extends HTMLAttributes<HTMLDivElement> {
   gridColor?: string
 }
 
+const BEAM_COLORS = [
+  'rgba(255, 45, 107, 0.7)',
+  'rgba(0, 229, 255, 0.7)',
+  'rgba(245, 184, 0, 0.7)',
+  'rgba(139, 92, 246, 0.7)',
+]
+
 const Beam = ({
   width,
   x,
@@ -27,7 +34,7 @@ const Beam = ({
   delay: number
   duration: number
 }) => {
-  const hue = Math.floor(Math.random() * 25) + 35
+  const color = BEAM_COLORS[Math.floor(Math.random() * BEAM_COLORS.length)]
   const ar = Math.floor(Math.random() * 10) + 1
 
   return (
@@ -37,7 +44,7 @@ const Beam = ({
           "--x": `${x}`,
           "--width": `${width}`,
           "--aspect-ratio": `${ar}`,
-          "--background": `linear-gradient(hsl(${hue} 80% 60%), transparent)`,
+          "--background": `linear-gradient(${color}, transparent)`,
         } as React.CSSProperties
       }
       className={`absolute top-0 left-[var(--x)] [aspect-ratio:1/var(--aspect-ratio)] [width:var(--width)] [background:var(--background)]`}

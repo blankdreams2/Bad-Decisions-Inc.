@@ -16,7 +16,7 @@ const Hero = () => {
     <div className="h-dvh w-full overflow-hidden bg-midnight">
       <WarpBackground
         className="relative h-full overflow-hidden rounded-none border-0 p-0 bg-midnight"
-        gridColor="rgba(245, 184, 0, 0.09)"
+        gridColor="rgba(160, 140, 255, 0.13)"
         beamSize={5}
         beamsPerSide={4}
         beamDuration={6}
@@ -25,16 +25,16 @@ const Hero = () => {
       >
         {/* Ambient color glows */}
         <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
-          <div className="absolute -top-40 left-1/2 h-[500px] w-[800px] -translate-x-1/2 rounded-full bg-gold/4 blur-[150px]" />
-          <div className="absolute top-[40%] -left-60 h-[400px] w-[400px] rounded-full bg-royal/5 blur-[130px]" />
-          <div className="absolute top-[60%] -right-60 h-[400px] w-[400px] rounded-full bg-neon/3 blur-[130px]" />
+          <div className="absolute -top-40 left-1/3 h-[500px] w-[600px] -translate-x-1/2 rounded-full bg-electric/5 blur-[150px]" />
+          <div className="absolute -top-20 right-1/4 h-[400px] w-[500px] rounded-full bg-neon/4 blur-[140px]" />
+          <div className="absolute top-[45%] -left-60 h-[400px] w-[400px] rounded-full bg-royal/7 blur-[130px]" />
+          <div className="absolute top-[55%] -right-60 h-[400px] w-[400px] rounded-full bg-gold/5 blur-[130px]" />
         </div>
 
         {/* Content */}
         <div className="relative z-10 flex h-full flex-col">
-          {/* nav */}
+          {/* Nav */}
           <nav className="container mx-auto flex items-center justify-between px-3 pt-3 sm:px-6 sm:pt-5">
-            {/* left */}
             <Link href="/" className="group flex items-center gap-2 sm:gap-3">
               <BdiLogo multicolor className="transition-transform duration-300 group-hover:scale-110" size={28} />
               <div className="hidden min-[420px]:flex flex-col leading-none">
@@ -47,11 +47,10 @@ const Hero = () => {
               </div>
             </Link>
 
-            {/* right */}
             <div className="flex items-center gap-1.5 sm:gap-3">
               <Link
                 href="/games"
-                className="flex items-center gap-1.5 rounded-lg border border-gold/30 bg-gold/10 px-3 py-1.5 text-[11px] font-semibold text-gold-light transition-all duration-300 hover:bg-gold/20 hover:shadow-[0_0_20px_rgba(245,184,0,0.15)] sm:gap-2 sm:px-4 sm:py-2 sm:text-sm"
+                className="flex items-center gap-1.5 rounded-lg border border-white/15 bg-white/5 px-3 py-1.5 text-[11px] font-semibold text-white/80 transition-all duration-300 hover:bg-white/10 hover:text-white sm:gap-2 sm:px-4 sm:py-2 sm:text-sm"
               >
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="sm:h-[18px] sm:w-[18px]">
                   <rect x="2" y="6" width="20" height="12" rx="2" />
@@ -62,11 +61,10 @@ const Hero = () => {
                 <span className="hidden min-[360px]:inline">Browse Games</span>
               </Link>
 
-              {/* auth */}
               {user ? (
                 <>
                   <button
-                    className="flex items-center gap-1.5 rounded-lg border border-gold/30 bg-gold/10 px-3 py-1.5 text-[11px] font-semibold text-gold-light transition-all duration-300 hover:bg-gold/20 hover:shadow-[0_0_20px_rgba(245,184,0,0.15)] sm:gap-2 sm:px-4 sm:py-2 sm:text-sm"
+                    className="rounded-lg border border-white/15 bg-white/5 px-3 py-1.5 text-[11px] font-semibold text-white/80 transition-all duration-300 hover:bg-white/10 hover:text-white sm:px-4 sm:py-2 sm:text-sm"
                     onClick={() => router.push('/host')}
                   >
                     Dashboard
@@ -80,7 +78,7 @@ const Hero = () => {
                 </>
               ) : (
                 <button
-                  className="flex items-center gap-1.5 rounded-lg border border-gold/30 bg-gold/10 px-3 py-1.5 text-[11px] font-semibold text-gold-light transition-all duration-300 hover:bg-gold/20 hover:shadow-[0_0_20px_rgba(245,184,0,0.15)] sm:gap-2 sm:px-4 sm:py-2 sm:text-sm"
+                  className="rounded-lg border border-white/15 bg-white/5 px-3 py-1.5 text-[11px] font-semibold text-white/80 transition-all duration-300 hover:bg-white/10 hover:text-white sm:px-4 sm:py-2 sm:text-sm"
                   onClick={() => router.push('/sign-in')}
                 >
                   Login
@@ -89,13 +87,12 @@ const Hero = () => {
             </div>
           </nav>
 
-          {/* hero center */}
+          {/* Hero center */}
           <section className="flex flex-1 flex-col items-center justify-center px-3 sm:px-4">
-            <h1 className="text-glow-gold text-center text-3xl font-extrabold tracking-tight min-[375px]:text-4xl sm:text-5xl md:text-6xl lg:text-7xl">
-              <span className="text-white">BAD</span>{' '}
-              <span className="text-gold">DECISIONS</span>
+            <h1 className="text-glow-white text-center font-extrabold italic tracking-tight text-white text-4xl min-[375px]:text-5xl sm:text-6xl md:text-7xl lg:text-8xl">
+              BAD DECISIONS
             </h1>
-            <p className="font-syne mt-1 text-center text-lg tracking-[0.3em] text-smoke min-[375px]:text-lg">
+            <p className="font-syne mt-1 text-center text-sm tracking-[0.3em] text-white/30 sm:text-base">
               INCORPORATED
             </p>
 
@@ -110,11 +107,11 @@ const Hero = () => {
 
             <div className="mt-4 sm:mt-5">
               <button
-                className="group relative cursor-pointer overflow-hidden rounded-lg bg-gold px-7 py-2.5 font-syne text-xs font-bold tracking-wide text-midnight transition-all duration-300 hover:shadow-[0_0_40px_rgba(245,184,0,0.35)] sm:px-12 sm:py-3.5 sm:text-base"
+                className="group relative cursor-pointer overflow-hidden rounded-lg border border-white/20 bg-white px-7 py-2.5 font-syne text-xs font-bold tracking-wide text-midnight transition-all duration-300 hover:shadow-[0_0_30px_rgba(255,255,255,0.2)] sm:px-12 sm:py-3.5 sm:text-base"
                 onClick={() => router.push(user ? '/host' : '/sign-in')}
               >
                 <span className="relative z-10">{user ? 'OPEN DASHBOARD' : 'START PLAYING'}</span>
-                <div className="absolute inset-0 bg-gold-light opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                <div className="absolute inset-0 bg-white/80 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
               </button>
             </div>
           </section>
