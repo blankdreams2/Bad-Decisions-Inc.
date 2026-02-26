@@ -1,14 +1,17 @@
-import type { Metadata } from 'next'
-import { Inter, Platypi } from 'next/font/google'
+import ConvexClientProvider from '@/app/convex-client-provider'
 import { cn } from '@/lib/utils'
+import type { Metadata } from 'next'
+import { Rubik, Syne } from 'next/font/google'
 import './globals.css'
-import ConvexClientProvider from './convex-client-provider'
 
-const inter = Inter({ subsets: ['latin'] })
-
-const platypi = Platypi({
+const rubik = Rubik({
   subsets: ['latin'],
-  variable: '--font-platypi-var',
+  variable: '--font-rubik-var',
+})
+
+const syne = Syne({
+  subsets: ['latin'],
+  variable: '--font-syne-var',
 })
 
 export const metadata: Metadata = {
@@ -18,13 +21,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body
-        className={cn(
-          inter.className,
-          platypi.variable,
-          'bg-[#161616]'
-        )}
-      >
+      <body className={cn(rubik.className, rubik.variable, syne.variable, 'bg-midnight')}>
         <ConvexClientProvider>{children}</ConvexClientProvider>
       </body>
     </html>
