@@ -11,21 +11,21 @@ export interface Game {
 
 export const GAMES: Game[] = [
   {
-    title: 'Shake Game',
+    title: 'Rebel Shake',
     desc: 'Rebel Shake: 5-second synced countdown, then full speed phone shaking for 15 seconds.',
     accent: 'neon',
     emoji: '📱',
     model: '/phone.glb',
   },
   {
-    title: 'Flip Game',
+    title: 'Vegas Pan Flip',
     desc: 'Vegas Pan Flip: flick your phone to launch the egg and stack flips on the live race track.',
     accent: 'electric',
     emoji: '🍳',
     model: '/pan3.glb',
   },
   {
-    title: 'Tap Tap',
+    title: 'Poker Chip Tap',
     desc: 'Poker Chip Tap: wait for countdown, then spam taps for the highest score before time runs out.',
     accent: 'gold',
     emoji: '🎰',

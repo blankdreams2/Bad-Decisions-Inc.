@@ -101,7 +101,7 @@ function KanpaiScene({ isActive, beatPulse, clapNonce }: { isActive: boolean; be
   );
 }
 
-export function KanpaiTimingGame({
+export function KanpaiTiming({
   code,
   roomStatus,
   roomStartedAt,
@@ -250,13 +250,13 @@ export function KanpaiTimingGame({
 
   return (
     <div className="pt-3 border-t">
-      <div className="relative overflow-hidden rounded-xl border border-[#eab308]/55 bg-[#171a20] p-4 space-y-4 text-white">
-        <div className="rounded-full inline-flex items-center border border-[#eab308]/70 bg-black/30 px-3 py-1 text-xs font-semibold tracking-wide text-[#facc15]">
+      <div className="relative overflow-hidden rounded-xl border border-white/8 bg-surface p-4 space-y-4 text-white">
+        <div className="rounded-full inline-flex items-center border border-white/10 bg-white/5 px-3 py-1 text-xs font-semibold tracking-wide text-white/60">
           BAD DECISIONS INC · KANPAI TIMING
         </div>
 
-        <div className="relative rounded-md border border-white/20 bg-black/30 p-3">
-          <div className={`pointer-events-none absolute inset-2 rounded-md border-2 transition-all ${beatPulse ? "border-[#facc15] opacity-100 shadow-[0_0_18px_rgba(250,204,21,0.55)]" : "border-[#facc15]/20 opacity-60"}`} />
+        <div className="relative rounded-md border border-white/8 bg-white/5 p-3">
+          <div className={`pointer-events-none absolute inset-2 rounded-md border-2 transition-all ${beatPulse ? "border-white opacity-100 shadow-[0_0_18px_rgba(255,255,255,0.4)]" : "border-white/20 opacity-60"}`} />
           <KanpaiScene isActive={isRoundRunning || isCountdown} beatPulse={beatPulse} clapNonce={clapNonce} />
           <button
             type="button"
@@ -267,12 +267,12 @@ export function KanpaiTimingGame({
           />
           {isCountdown ? (
             <div className="mt-2 text-center">
-              <div className="text-xs uppercase tracking-wide text-[#facc15]">Get ready</div>
-              <div className="text-3xl font-black tabular-nums text-[#fde047]">{countdownDisplay}</div>
+              <div className="text-xs uppercase tracking-wide text-white/50">Get ready</div>
+              <div className="text-3xl font-black tabular-nums text-white">{countdownDisplay}</div>
             </div>
           ) : (
-            <div className="mt-2 space-y-1 text-xs text-[#facc15]">
-              <div>Tap when the ring flashes yellow. One tap per beat.</div>
+            <div className="mt-2 space-y-1 text-xs text-white">
+              <div>Tap when the ring flashes. One tap per beat.</div>
               <div className="text-white/80">Closer timing = higher score.</div>
             </div>
           )}
@@ -280,31 +280,31 @@ export function KanpaiTimingGame({
 
         <div className="space-y-2">
           <div className="flex items-center justify-between gap-3">
-            <div className="text-sm font-medium text-[#facc15]">Timing score</div>
+            <div className="text-sm font-medium text-white">Timing score</div>
             <div className="text-xs text-white/80">{isCountdown ? `STARTS IN ${countdownDisplay}` : isRoundRunning ? "LIVE" : isRoundOver ? "FINISHED" : "READY"}</div>
           </div>
-          <div className="relative h-2 rounded-md bg-white/10 overflow-hidden border border-white/30">
-            <div className="absolute inset-y-0 left-0 bg-[#eab308]" style={{ width: `${Math.round((roomStatus === "finished" ? 1 : round.progress01) * 1000) / 10}%` }} />
+          <div className="relative h-2 rounded-md bg-white/10 overflow-hidden border border-white/10">
+            <div className="absolute inset-y-0 left-0 bg-white" style={{ width: `${Math.round((roomStatus === "finished" ? 1 : round.progress01) * 1000) / 10}%` }} />
           </div>
           <div className="grid grid-cols-3 gap-2 text-xs">
-            <div className="rounded border border-white/20 bg-black/25 px-3 py-2">
+            <div className="rounded-xl border border-white/8 bg-white/3 px-3 py-2">
               Time
-              <div className="mt-0.5 text-lg font-semibold tabular-nums text-[#facc15]">{secondsLeft}s</div>
+              <div className="mt-0.5 text-lg font-semibold tabular-nums text-white">{secondsLeft}s</div>
             </div>
-            <div className="rounded border border-white/20 bg-black/25 px-3 py-2">
+            <div className="rounded-xl border border-white/8 bg-white/3 px-3 py-2">
               Hits
-              <div className="mt-0.5 text-lg font-semibold tabular-nums text-[#facc15]">{hits}</div>
+              <div className="mt-0.5 text-lg font-semibold tabular-nums text-white">{hits}</div>
             </div>
-            <div className="rounded border border-white/20 bg-black/25 px-3 py-2">
+            <div className="rounded-xl border border-white/8 bg-white/3 px-3 py-2">
               Avg ms
-              <div className="mt-0.5 text-lg font-semibold tabular-nums text-[#facc15]">{avgMs ?? "-"}</div>
+              <div className="mt-0.5 text-lg font-semibold tabular-nums text-white">{avgMs ?? "-"}</div>
             </div>
           </div>
         </div>
 
         <div className="space-y-2">
-          <div className="flex items-center justify-between gap-2">
-            <div className="text-sm font-medium text-[#facc15]">Race Track Leaderboard</div>
+          <div className="flex items-center justify-between gap-2 pb-5">
+            <div className="text-sm font-medium text-white">Race Track Leaderboard</div>
             <div className="text-xs text-white/80 tabular-nums">
               {isCountdown ? `Starts in ${countdownDisplay}s` : roomStatus === "playing" ? `${secondsLeft}s left` : roundLabel}
             </div>
@@ -325,15 +325,15 @@ export function KanpaiTimingGame({
                   <div key={p.id} className="space-y-1.5">
                     <div className="flex items-center justify-between gap-2">
                       <div className="flex items-center gap-2 min-w-0">
-                        <div className="text-xs w-5 text-center font-semibold text-[#facc15]">{rank}</div>
+                        <div className="text-xs w-5 text-center font-semibold text-white">{rank}</div>
                         <div className="w-40 text-sm font-semibold truncate text-white">
                           {p.name}
                           {p.isHost ? " (host)" : ""}
                         </div>
                       </div>
-                      {isRoundOver && <div className="text-xs tabular-nums text-[#facc15]">{p.count} pts</div>}
+                      {isRoundOver && <div className="text-xs tabular-nums text-white">{p.count} pts</div>}
                     </div>
-                    <div className="relative h-10 rounded-md bg-white/10 overflow-hidden border border-white/30">
+                    <div className="relative h-10 rounded-md bg-white/10 overflow-hidden border border-white/10">
                       <div className="absolute inset-y-0 left-0 rounded-r-md" style={{ background: `linear-gradient(90deg, ${startColor} 0%, ${endColor} 100%)`, width: `${fillPct}%` }} />
                       <div className="absolute top-1/2" style={{ left: `${avatarLeftPct}%`, transform: "translate(-50%, -50%)" }} title={p.name}>
                         <RoomPlayerAvatar name={p.name} avatarUrl={p.avatarUrl} accent={startColor} className="h-8 w-8" />
@@ -352,7 +352,7 @@ export function KanpaiTimingGame({
         </div>
 
         {isRoundOver && winnerBannerText && (
-          <div className="border border-[#eab308]/70 rounded-md bg-black/30 p-3 text-center animate-pulse">
+          <div className="border border-white/10 rounded-xl bg-white/5 p-3 text-center animate-pulse">
             <div className="text-sm font-medium">{winnerBannerText}</div>
           </div>
         )}

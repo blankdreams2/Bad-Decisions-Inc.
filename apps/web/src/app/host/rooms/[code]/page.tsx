@@ -6,31 +6,33 @@ import { useParams, useRouter } from 'next/navigation'
 import { useEffect, useMemo, useState } from 'react'
 import QRCode from 'react-qr-code'
 
+import BdiLogo from '@/components/common/bdiLogo'
 import { Button } from '@/components/common/button'
+import { ConfirmPopover } from '@/components/common/confirm-popover'
+import { AiModelSelector } from '@/components/host/ai-model-selector'
+import { GAME_META, type Game } from '@/data/game-meta'
 import { PUNISHMENT_CARDS, VEGAS_VENUES, type RewardMode, type VegasVenue } from '@/data/vegas-options'
 import { api } from '@packages/backend/convex/_generated/api'
 
-function formatGame(game: string | undefined) {
-  if (game === 'shake') return 'Rebel Shake'
-  if (game === 'flip') return 'Vegas Pan Flip'
-  if (game === 'tap') return 'Poker Chip Tap'
-  if (game === 'kanpai') return 'Kanpai Timing'
-  if (game === 'chopstick') return 'Chopstick Catch'
-  return 'unknown'
+function formatGame(game: string | undefined): string {
+  return game ? (GAME_META[game as Game]?.label ?? 'Unknown') : 'Unknown'
 }
 
 export default function HostRoomManagePage() {
+  const router = useRouter()
   const params = useParams<{ code: string }>()
   const code = (params?.code ?? '').toUpperCase()
 
-  const router = useRouter()
-
+  /* queries */
   const room = useQuery(api.rooms.getRoomByCode, code ? { code } : 'skip')
   const isHost = useQuery(api.rooms.isHostForRoom, code ? { code } : 'skip')
 
+  /* mutations */
   const deleteRoom = useMutation(api.rooms.deleteRoom)
   const setPartySetup = useMutation((api as any).rooms.setPartySetup)
   const generateVegasOptions = useAction((api as any).rooms.generateVegasOptions)
+
+  /* states */
   const [deleting, setDeleting] = useState(false)
   const [savingSetup, setSavingSetup] = useState(false)
   const [generatingKind, setGeneratingKind] = useState<'venues' | 'punishments' | null>(null)
@@ -47,7 +49,6 @@ export default function HostRoomManagePage() {
   const [newVenueName, setNewVenueName] = useState('')
   const [newVenueMapsUrl, setNewVenueMapsUrl] = useState('')
   const [newPunishment, setNewPunishment] = useState('')
-
   const [origin, setOrigin] = useState('')
 
   useEffect(() => {
@@ -77,41 +78,28 @@ export default function HostRoomManagePage() {
     }
   }, [existingSetup])
 
-  const allVenueOptions = useMemo(() => {
-    return [...VEGAS_VENUES, ...customVenues]
-  }, [customVenues])
+  const allVenueOptions = useMemo(() => [...VEGAS_VENUES, ...customVenues], [customVenues])
 
-  async function onDeleteRoom() {
-    if (!room) return
-    if (!isHost) return
-    const ok = window.confirm(`Delete room ${code}? This cannot be undone.`)
-    if (!ok) return
-
+  const onDeleteRoom = async () => {
+    if (!room || !isHost) return
     try {
       setDeleteError(null)
       setDeleting(true)
       await deleteRoom({ code })
       router.push('/host')
     } catch (err) {
-      const message = err instanceof Error ? err.message : String(err)
-      setDeleteError(message)
+      setDeleteError(err instanceof Error ? err.message : String(err))
     } finally {
       setDeleting(false)
     }
   }
 
-  async function onSaveSetup() {
+  const onSaveSetup = async () => {
     try {
       setSetupError(null)
       setSetupSavedLabel(null)
       setSavingSetup(true)
-      await setPartySetup({
-        code,
-        rewardMode,
-        venueIds: selectedVenueIds,
-        punishmentCards,
-        customVenues,
-      })
+      await setPartySetup({ code, rewardMode, venueIds: selectedVenueIds, punishmentCards, customVenues })
       setSetupSavedLabel('Saved')
     } catch (err) {
       setSetupError(err instanceof Error ? err.message : String(err))
@@ -120,7 +108,7 @@ export default function HostRoomManagePage() {
     }
   }
 
-  async function onGenerateVenues() {
+  const onGenerateVenues = async () => {
     try {
       setAiError(null)
       setGeneratingKind('venues')
@@ -144,7 +132,7 @@ export default function HostRoomManagePage() {
     }
   }
 
-  async function onGeneratePunishments() {
+  const onGeneratePunishments = async () => {
     try {
       setAiError(null)
       setGeneratingKind('punishments')
@@ -176,120 +164,156 @@ export default function HostRoomManagePage() {
   const canSaveSetup =
     !savingSetup && (!needsVenue || selectedVenueIds.length > 0) && (!needsPunishment || punishmentCards.length > 0)
 
+  const gameMeta = room ? (GAME_META[room.game as Game] ?? GAME_META.shake) : GAME_META.shake
+  const isActive = room ? room.status === 'lobby' || room.status === 'playing' : false
+
   return (
-    <main className="min-h-dvh p-4 bg-[#0f1115]">
-      <div className="max-w-5xl w-full mx-auto space-y-6 text-zinc-100">
-        <div className="space-y-2">
-          <h1 className="text-2xl font-semibold text-[#facc15]">Room {code}</h1>
-          <p className="text-sm text-zinc-300">Set your party reward rules, then start the game.</p>
+    <main className="min-h-dvh bg-midnight">
+      {/* ── top bar ── */}
+      <header className="sticky top-0 z-30 border-b border-white/5 bg-midnight/80 backdrop-blur-xl">
+        <div className="mx-auto flex max-w-2xl items-center justify-between px-4 py-3">
+          <Link href="/host" className="group flex items-center gap-2">
+            <BdiLogo multicolor size={24} />
+            <span className="font-syne text-xs font-bold tracking-wide text-white sm:text-sm">Room {code}</span>
+          </Link>
+          <Link href="/host" className="text-xs text-white/40 transition-colors hover:text-white">
+            Back
+          </Link>
         </div>
+      </header>
 
-        {!room ? (
-          <div className="text-sm text-white/70">Loading room…</div>
-        ) : (
-          <section className="grid gap-4 lg:grid-cols-[320px_minmax(0,1fr)]">
-            <div className="border border-[#eab308]/55 bg-black/30 rounded-xl p-4 space-y-4">
-              <div className="space-y-1">
-                <div className="text-sm text-zinc-400">Game</div>
-                <div className="font-medium text-[#facc15]">{formatGame(room.game)}</div>
+      {!room ? (
+        <div className="flex min-h-[50dvh] items-center justify-center">
+          <div className="h-6 w-6 animate-spin rounded-full border-2 border-white/20 border-t-white" />
+        </div>
+      ) : (
+        <div className="mx-auto max-w-2xl px-4 pb-8">
+          {/* ── room info card ── */}
+          <section className="mt-6 overflow-hidden rounded-2xl border border-white/8 bg-surface">
+            <div className="flex items-center justify-between p-4">
+              <div className="flex items-center gap-3">
+                <span
+                  className={`h-2.5 w-2.5 rounded-full ${isActive ? 'bg-green-400 shadow-[0_0_8px_rgba(74,222,128,0.5)]' : 'bg-white/15'}`}
+                />
+                <div>
+                  <span className={`text-sm font-semibold ${gameMeta.accent}`}>{formatGame(room.game)}</span>
+                  <span className="ml-2 font-mono text-xs text-white/30">{code}</span>
+                </div>
               </div>
-              <div className="space-y-1">
-                <div className="text-sm text-zinc-400">Status</div>
-                <div className="font-medium">{room.status}</div>
-              </div>
-
-              <div className="border rounded-lg p-3 bg-white w-fit mx-auto">
-                {origin ? <QRCode value={roomUrl} size={220} /> : <div className="h-[220px] w-[220px]" />}
-              </div>
-
-              <Button asChild className="w-full">
-                <Link href={roomUrl}>Open room</Link>
-              </Button>
-              <div className="text-xs text-zinc-400 text-center">Players scan QR and auto-join this room.</div>
+              <span
+                className={`rounded-full px-2.5 py-0.5 text-[10px] font-medium ${isActive ? 'bg-green-500/10 text-green-400' : 'bg-white/5 text-white/25'}`}
+              >
+                {room.status}
+              </span>
             </div>
 
-            <div className="relative border border-[#eab308]/55 bg-black/25 rounded-xl p-4 md:p-5 space-y-4">
-              {generatingKind && (
-                <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-4 rounded-xl bg-black/70 backdrop-blur-sm">
-                  <div className="relative h-10 w-10">
-                    <div className="absolute inset-0 rounded-full border-2 border-[#eab308]/30" />
-                    <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-[#facc15] animate-spin" />
-                  </div>
-                  <div className="text-sm font-medium text-[#facc15]">
-                    Generating {generatingKind === 'venues' ? 'venue picks' : 'punishments'}…
-                  </div>
-                  <div className="text-xs text-zinc-400">This can take up to 30 seconds</div>
-                </div>
-              )}
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <div className="text-sm text-[#facc15] font-semibold">Party Setup (Free)</div>
-                  <div className="text-xs text-zinc-400">Static Vegas pool + optional AI Vegas generator.</div>
-                </div>
-                <div className="text-xs rounded-full border border-[#eab308]/70 px-3 py-1 bg-[#eab308]/20 text-[#facc15]">
-                  {selectedVenueCount} places · {selectedPunishmentCount} punishments
-                </div>
+            <div className="flex flex-col items-center gap-4 border-t border-white/5 px-4 py-5 sm:flex-row sm:justify-between">
+              <div className="shrink-0 rounded-xl bg-white p-2">
+                {origin ? <QRCode value={roomUrl} size={270} /> : <div className="h-[250px] w-[250px]" />}
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-2">
-                <select
-                  className="w-full h-9 rounded-md border border-white/25 bg-black/30 px-2 text-xs text-zinc-100"
-                  value={aiModel}
-                  onChange={(e) => setAiModel(e.target.value)}
-                >
-                  <optgroup label="Qwen">
-                    <option value="Qwen/Qwen2.5-32B-Instruct">Qwen 2.5 32B Instruct</option>
-                    <option value="Qwen/Qwen2.5-7B-Instruct">Qwen 2.5 7B Instruct</option>
-                    <option value="Qwen/Qwen2.5-3B-Instruct">Qwen 2.5 3B Instruct</option>
-                    <option value="Qwen/Qwen2.5-1.5B-Instruct">Qwen 2.5 1.5B Instruct</option>
-                    <option value="Qwen/Qwen3-8B">Qwen 3 8B</option>
-                    <option value="Qwen/Qwen3-4B">Qwen 3 4B</option>
-                    <option value="Qwen/Qwen3-1.7B">Qwen 3 1.7B</option>
-                    <option value="Qwen/Qwen3-0.6B">Qwen 3 0.6B</option>
-                  </optgroup>
-                  <optgroup label="Llama">
-                    <option value="meta-llama/Meta-Llama-3.1-8B-Instruct">Llama 3.1 8B Instruct</option>
-                    <option value="meta-llama/Llama-3.1-8B-Instruct">Llama 3.1 8B Instruct (alt)</option>
-                    <option value="meta-llama/Llama-3.2-1B-Instruct">Llama 3.2 1B Instruct</option>
-                  </optgroup>
-                  <optgroup label="Deepseek">
-                    <option value="deepseek-ai/DeepSeek-R1-Distill-Qwen-32B">DeepSeek R1 32B</option>
-                    <option value="deepseek-ai/DeepSeek-R1-Distill-Qwen-7B">DeepSeek R1 7B</option>
-                  </optgroup>
-                  <optgroup label="Mistral">
-                    <option value="mistralai/Mistral-7B-Instruct-v0.2">Mistral 7B Instruct v0.2</option>
-                  </optgroup>
-                </select>
-                <div className="text-[11px] text-zinc-400 md:text-right">
-                  Featherless AI model
-                </div>
+              <div className="flex flex-1 flex-col items-center gap-2 sm:items-end">
+                <Button asChild className="w-full sm:w-auto">
+                  <Link href={roomUrl}>Open Room</Link>
+                </Button>
+                <p className="text-center text-[10px] text-white/20 sm:text-right">Players scan QR to auto-join</p>
               </div>
-              <input
-                className="w-full h-9 rounded-md border border-white/25 bg-black/30 px-2 text-xs placeholder:text-zinc-500"
-                placeholder="Your tags or keywords to guide the AI (e.g. kbbq, rooftop bars, spicy punishments)"
-                value={aiRequest}
-                onChange={(e) => setAiRequest(e.target.value)}
-              />
+            </div>
+          </section>
 
-              {isHost ? (
-                <>
-                  <div className="space-y-2">
-                    <div className="text-xs text-zinc-400">Reward mode</div>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                      {[
-                        { id: 'venue', label: 'Venue only' },
-                        { id: 'punishment', label: 'Punishment only' },
-                        { id: 'combo', label: 'Both' },
-                      ].map((mode) => {
+          {/* ── host controls ── */}
+          {isHost ? (
+            <>
+              {/* ── ai model + prompt ── */}
+              <section className="mt-6">
+                <h2 className="mb-3 text-xs font-semibold tracking-widest text-white/30 uppercase">AI Generator</h2>
+                <div className="space-y-3 rounded-2xl border border-white/8 bg-surface p-4">
+                  {generatingKind && (
+                    <div className="flex items-center gap-3 rounded-xl border border-white/5 bg-white/5 p-3">
+                      <div className="relative h-5 w-5">
+                        <div className="absolute inset-0 rounded-full border-2 border-white/10" />
+                        <div className="absolute inset-0 animate-spin rounded-full border-2 border-transparent border-t-white" />
+                      </div>
+                      <p className="text-xs text-white/60">
+                        Generating {generatingKind === 'venues' ? 'venue picks' : 'punishments'}...
+                      </p>
+                    </div>
+                  )}
+
+                  <div>
+                    <label className="mb-1.5 block text-[11px] text-white/30">Featherless AI model</label>
+                    <AiModelSelector value={aiModel} onChange={setAiModel} />
+                  </div>
+
+                  <div>
+                    <label className="mb-1.5 block text-[11px] text-white/30">Keywords / tags</label>
+                    <input
+                      className="h-9 w-full rounded-lg border border-white/15 bg-white/5 px-3 text-xs text-white outline-none transition-colors placeholder:text-white/20 focus:border-white/25"
+                      placeholder="e.g. kbbq, rooftop bars, spicy punishments"
+                      value={aiRequest}
+                      onChange={(e) => setAiRequest(e.target.value)}
+                    />
+                  </div>
+
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      variant="primary"
+                      onClick={onGenerateVenues}
+                      disabled={generatingKind !== null}
+                      className="flex-1"
+                    >
+                      {generatingKind === 'venues' ? 'Generating...' : 'AI Venues'}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="primary"
+                      onClick={onGeneratePunishments}
+                      disabled={generatingKind !== null}
+                      className="flex-1"
+                    >
+                      {generatingKind === 'punishments' ? 'Generating...' : 'AI Punishments'}
+                    </Button>
+                  </div>
+
+                  {aiError && (
+                    <div className="rounded-lg border border-neon/20 bg-neon/5 p-2.5 text-[11px] text-neon">
+                      {aiError}
+                    </div>
+                  )}
+                </div>
+              </section>
+
+              {/* ── party setup ── */}
+              <section className="mt-6">
+                <div className="mb-3 flex items-center justify-between">
+                  <h2 className="text-xs font-semibold tracking-widest text-white/30 uppercase">Party Setup</h2>
+                  <span className="rounded-full border border-white/10 bg-white/5 px-2.5 py-0.5 text-[10px] text-white/30">
+                    {selectedVenueCount} places · {selectedPunishmentCount} punishments
+                  </span>
+                </div>
+
+                <div className="space-y-4 rounded-2xl border border-white/8 bg-surface p-4">
+                  {/* reward mode */}
+                  <div>
+                    <label className="mb-2 block text-[11px] text-white/30">Reward mode</label>
+                    <div className="grid grid-cols-3 gap-2">
+                      {(
+                        [
+                          { id: 'venue', label: 'Venue' },
+                          { id: 'punishment', label: 'Punishment' },
+                          { id: 'combo', label: 'Both' },
+                        ] as const
+                      ).map((mode) => {
                         const active = rewardMode === mode.id
                         return (
                           <button
                             key={mode.id}
                             type="button"
-                            onClick={() => setRewardMode(mode.id as RewardMode)}
-                            className={`h-10 rounded-md border text-sm transition ${
+                            onClick={() => setRewardMode(mode.id)}
+                            className={`h-9 rounded-lg border text-xs font-medium transition-all ${
                               active
-                                ? 'border-[#eab308] bg-[#eab308]/20 text-[#facc15]'
-                                : 'border-white/20 bg-black/20 text-zinc-300 hover:bg-black/35'
+                                ? 'border-white/20 bg-white/10 text-white'
+                                : 'border-white/8 bg-white/2 text-white/30 hover:bg-white/5 hover:text-white/50'
                             }`}
                           >
                             {mode.label}
@@ -299,33 +323,21 @@ export default function HostRoomManagePage() {
                     </div>
                   </div>
 
+                  {/* venues */}
                   {needsVenue && (
-                    <div className="space-y-2 rounded-lg border border-[#eab308]/55 bg-[#eab308]/10 p-3">
+                    <div className="space-y-3">
                       <div className="flex items-center justify-between">
-                        <div className="text-xs text-zinc-300">Restaurants / Places</div>
-                        <div className="flex items-center gap-2">
-                          <div className="text-xs text-zinc-400">{selectedVenueCount}/8 selected</div>
-                          <Button
-                            type="button"
-                            size="sm"
-                            variant="outline"
-                            onClick={onGenerateVenues}
-                            disabled={generatingKind !== null}
-                          >
-                            {generatingKind === 'venues' ? 'Generating…' : 'AI Vegas picks'}
-                          </Button>
-                        </div>
+                        <span className="text-[11px] text-white/30">Restaurants / Places</span>
+                        <span className="text-[10px] text-white/20">{selectedVenueCount}/8</span>
                       </div>
-                      <div className="grid grid-cols-1 xl:grid-cols-2 gap-2 max-h-[280px] overflow-y-auto pr-1">
+                      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                         {allVenueOptions.map((venue) => {
                           const checked = selectedVenueIds.includes(venue.id)
                           return (
                             <label
                               key={venue.id}
-                              className={`rounded-md border p-2.5 flex gap-2 cursor-pointer transition ${
-                                checked
-                                  ? 'border-[#eab308]/85 bg-[#eab308]/20'
-                                  : 'border-white/20 bg-black/20 hover:bg-black/35'
+                              className={`flex cursor-pointer items-start gap-2.5 rounded-xl border p-3 transition-all ${
+                                checked ? 'border-white/15 bg-white/8' : 'border-white/5 bg-white/2 hover:bg-white/5'
                               }`}
                             >
                               <input
@@ -337,35 +349,36 @@ export default function HostRoomManagePage() {
                                     return prev.filter((id) => id !== venue.id)
                                   })
                                 }}
-                                className="mt-0.5"
+                                className="mt-0.5 accent-white"
                               />
                               <div className="min-w-0">
-                                <div className="text-sm text-white">{venue.name}</div>
-                                <div className="text-[11px] text-white/65">
+                                <p className="text-xs font-medium text-white/80">{venue.name}</p>
+                                <p className="text-[10px] text-white/25">
                                   {venue.area} · {venue.vibe}
-                                </div>
+                                </p>
                               </div>
                             </label>
                           )
                         })}
                       </div>
 
-                      <div className="rounded-md border border-white/20 bg-black/20 p-2.5 space-y-2">
-                        <div className="text-xs text-[#facc15]">Add custom place</div>
+                      {/* add custom venue */}
+                      <div className="space-y-2 rounded-xl border border-dashed border-white/10 p-3">
+                        <p className="text-[11px] font-medium text-white/40">Add custom place</p>
                         <input
-                          className="w-full h-9 rounded-md border border-white/25 bg-black/40 px-2 text-sm"
+                          className="h-8 w-full rounded-lg border border-white/10 bg-white/5 px-2.5 text-xs text-white outline-none placeholder:text-white/15 focus:border-white/20"
                           placeholder="Place name (required)"
                           value={newVenueName}
                           onChange={(e) => setNewVenueName(e.target.value)}
                         />
                         <input
-                          className="w-full h-9 rounded-md border border-white/25 bg-black/40 px-2 text-sm"
+                          className="h-8 w-full rounded-lg border border-white/10 bg-white/5 px-2.5 text-xs text-white outline-none placeholder:text-white/15 focus:border-white/20"
                           placeholder="Maps URL (optional)"
                           value={newVenueMapsUrl}
                           onChange={(e) => setNewVenueMapsUrl(e.target.value)}
                         />
                         <Button
-                          type="button"
+                          size="sm"
                           variant="outline"
                           onClick={() => {
                             const name = newVenueName.trim()
@@ -390,30 +403,20 @@ export default function HostRoomManagePage() {
                     </div>
                   )}
 
+                  {/* punishments */}
                   {needsPunishment && (
-                    <div className="space-y-2 rounded-lg border border-[#eab308]/55 bg-[#eab308]/10 p-3">
-                      <div className="flex items-center justify-between gap-2">
-                        <div className="text-xs text-zinc-300">Punishment cards</div>
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="outline"
-                          onClick={onGeneratePunishments}
-                          disabled={generatingKind !== null}
-                        >
-                          {generatingKind === 'punishments' ? 'Generating…' : 'AI punishments'}
-                        </Button>
-                      </div>
-                      <div className="grid gap-2">
+                    <div className="space-y-3">
+                      <span className="text-[11px] text-white/30">Punishment cards</span>
+                      <div className="space-y-2">
                         {punishmentCards.map((card) => (
                           <div
                             key={card}
-                            className="text-xs rounded-md border border-white/20 bg-black/20 px-3 py-2 flex justify-between gap-2"
+                            className="flex items-center justify-between gap-2 rounded-xl border border-white/8 bg-white/2 px-3 py-2.5"
                           >
-                            <span>{card}</span>
+                            <span className="text-xs text-white/60">{card}</span>
                             <button
                               type="button"
-                              className="text-white/60 hover:text-white"
+                              className="shrink-0 text-[10px] text-white/20 transition-colors hover:text-neon"
                               onClick={() => setPunishmentCards((prev) => prev.filter((c) => c !== card))}
                             >
                               Remove
@@ -423,13 +426,13 @@ export default function HostRoomManagePage() {
                       </div>
                       <div className="flex gap-2">
                         <input
-                          className="w-full h-10 rounded-md border border-white/25 bg-black/40 px-3 text-sm"
+                          className="h-9 w-full rounded-lg border border-white/10 bg-white/5 px-3 text-xs text-white outline-none placeholder:text-white/15 focus:border-white/20"
                           placeholder="Add custom punishment"
                           value={newPunishment}
                           onChange={(e) => setNewPunishment(e.target.value)}
                         />
                         <Button
-                          type="button"
+                          size="sm"
                           variant="outline"
                           onClick={() => {
                             const next = newPunishment.trim()
@@ -444,33 +447,59 @@ export default function HostRoomManagePage() {
                     </div>
                   )}
 
-                  <div className="flex items-center justify-between gap-3 pt-1">
-                    <Button onClick={onSaveSetup} disabled={!canSaveSetup} size="default">
-                      {savingSetup ? 'Saving…' : 'Save'}
+                  {/* save */}
+                  <div className="flex items-center justify-between gap-3 border-t border-white/5 pt-4">
+                    <Button onClick={onSaveSetup} disabled={!canSaveSetup}>
+                      {savingSetup ? 'Saving...' : 'Save Setup'}
                     </Button>
-                    {setupSavedLabel && <div className="text-xs text-emerald-200">{setupSavedLabel}</div>}
+                    {setupSavedLabel && <span className="text-xs text-emerald-400">{setupSavedLabel}</span>}
                   </div>
-                  {aiError && <div className="text-xs text-rose-200">{aiError}</div>}
-                  {setupError && <div className="text-xs text-rose-200">{setupError}</div>}
+                  {setupError && (
+                    <div className="rounded-lg border border-neon/20 bg-neon/5 p-2.5 text-[11px] text-neon">
+                      {setupError}
+                    </div>
+                  )}
+                </div>
+              </section>
 
-                  <div className="pt-2 border-t border-white/15">
-                    {deleteError && <div className="text-sm text-zinc-300 mb-2 wrap-break-word">{deleteError}</div>}
-                    <Button variant="destructive" onClick={onDeleteRoom} disabled={deleting} size="default">
-                      {deleting ? 'Deleting…' : 'Delete'}
-                    </Button>
+              {/* ── danger zone ── */}
+              <section className="mt-6">
+                <h2 className="mb-3 text-xs font-semibold tracking-widest text-white/30 uppercase">Danger Zone</h2>
+                <div className="rounded-2xl border border-neon/10 bg-neon/2 p-4">
+                  {deleteError && <p className="mb-3 wrap-break-word text-xs text-neon">{deleteError}</p>}
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-xs font-medium text-white/50">Delete this room</p>
+                      <p className="text-[10px] text-white/20">This cannot be undone</p>
+                    </div>
+                    <ConfirmPopover
+                      title={`Delete room ${code}?`}
+                      description="All data will be permanently removed."
+                      confirmLabel="Delete"
+                      onConfirm={onDeleteRoom}
+                    >
+                      <Button variant="destructive" size="sm" disabled={deleting}>
+                        {deleting ? 'Deleting...' : 'Delete'}
+                      </Button>
+                    </ConfirmPopover>
                   </div>
-                </>
-              ) : (
-                <div className="text-sm text-zinc-300">Host-only controls.</div>
-              )}
-            </div>
-          </section>
-        )}
+                </div>
+              </section>
+            </>
+          ) : (
+            <section className="mt-6 rounded-2xl border border-white/8 bg-surface p-6 text-center">
+              <p className="text-sm text-white/30">Host-only controls</p>
+            </section>
+          )}
 
-        <Link className="text-sm underline text-[#facc15]" href="/host">
-          Back
-        </Link>
-      </div>
+          {/* ── bottom back link ── */}
+          <div className="mt-8 pb-4 text-center">
+            <Link href="/host" className="text-xs text-white/25 transition-colors hover:text-white/50">
+              Back to dashboard
+            </Link>
+          </div>
+        </div>
+      )}
     </main>
   )
 }

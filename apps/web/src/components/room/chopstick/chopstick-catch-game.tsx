@@ -98,8 +98,8 @@ function ChopstickScene({
     <div className="mx-auto h-52 w-full max-w-xs">
       <Canvas dpr={[1, 1.5]} gl={{ alpha: true }} camera={{ fov: 40, position: [0, 0.2, 4.2] }}>
         <ambientLight intensity={1.1} />
-        <directionalLight position={[3, 4, 3]} intensity={1} color="#fff2b3" />
-        <pointLight position={[-2, 2, 2]} intensity={0.7} color="#facc15" />
+        <directionalLight position={[3, 4, 3]} intensity={1} color="#ffffff" />
+        <pointLight position={[-2, 2, 2]} intensity={0.7} color="#ffffff" />
         <NormalizedAsset url="/bowl.glb" targetSize={1.95} position={[0, -0.55, 0]} />
         <AnimatedChopsticks />
         <NormalizedAsset
@@ -113,7 +113,7 @@ function ChopstickScene({
   );
 }
 
-export function ChopstickCatchGame({
+export const ChopstickCatch = ({
   code,
   roomStatus,
   roomStartedAt,
@@ -135,7 +135,7 @@ export function ChopstickCatchGame({
   isApprovedGuest: boolean;
   guestId: string | null;
   durationMs?: number;
-}) {
+}) => {
   const updateChopstickProgress = useMutation((api as any).players.updateChopstickProgress);
   const [catches, setCatches] = useState(0);
   const [catchPulseNonce, setCatchPulseNonce] = useState(0);
@@ -239,14 +239,14 @@ export function ChopstickCatchGame({
 
   return (
     <div className="pt-3 border-t">
-      <div className="relative overflow-hidden rounded-xl border border-[#eab308]/55 bg-[#171a20] p-4 space-y-4 text-white">
-        <div className="rounded-full inline-flex items-center border border-[#eab308]/70 bg-black/30 px-3 py-1 text-xs font-semibold tracking-wide text-[#facc15]">
+      <div className="relative overflow-hidden rounded-xl border border-white/8 bg-surface p-4 space-y-4 text-white">
+        <div className="rounded-full inline-flex items-center border border-white/10 bg-white/5 px-3 py-1 text-xs font-semibold tracking-wide text-white/60">
           BAD DECISIONS INC · CHOPSTICK CATCH
         </div>
-        <div className="relative rounded-md border border-white/20 bg-black/30 p-3">
-          <div className="mb-2 h-2 rounded-full border border-white/30 bg-white/10 overflow-hidden">
+        <div className="relative rounded-md border border-white/8 bg-white/5 p-3">
+          <div className="mb-2 h-2 rounded-full border border-white/10 bg-white/10 overflow-hidden">
             <div
-              className={`h-full transition-colors ${catchZoneNow && isRoundRunning ? "bg-[#facc15]" : "bg-white/20"}`}
+              className={`h-full transition-colors ${catchZoneNow && isRoundRunning ? "bg-white" : "bg-white/20"}`}
               style={{ width: `${Math.round(((sushiY + 0.7) / 1.7) * 100)}%` }}
             />
           </div>
@@ -266,11 +266,11 @@ export function ChopstickCatchGame({
           />
           {isCountdown ? (
             <div className="mt-2 text-center">
-              <div className="text-xs uppercase tracking-wide text-[#facc15]">Get ready</div>
-              <div className="text-3xl font-black tabular-nums text-[#fde047]">{countdownDisplay}</div>
+              <div className="text-xs uppercase tracking-wide text-white/50">Get ready</div>
+              <div className="text-3xl font-black tabular-nums text-white">{countdownDisplay}</div>
             </div>
           ) : (
-            <div className="mt-2 space-y-1 text-xs text-[#facc15]">
+            <div className="mt-2 space-y-1 text-xs text-white">
               <div>Tap when sushi reaches bowl/chopstick level.</div>
               <div className="text-white/80">{catchZoneNow && isRoundRunning ? "TAP NOW!" : "Wait for the sushi to drop..."}</div>
             </div>
@@ -279,27 +279,27 @@ export function ChopstickCatchGame({
 
         <div className="space-y-2">
           <div className="flex items-center justify-between gap-3">
-            <div className="text-sm font-medium text-[#facc15]">Sushi catches</div>
+            <div className="text-sm font-medium text-white">Sushi catches</div>
             <div className="text-xs text-white/80">{isCountdown ? `STARTS IN ${countdownDisplay}` : isRoundRunning ? "LIVE" : isRoundOver ? "FINISHED" : "READY"}</div>
           </div>
-          <div className="relative h-2 rounded-md bg-white/10 overflow-hidden border border-white/30">
-            <div className="absolute inset-y-0 left-0 bg-[#eab308]" style={{ width: `${Math.round((roomStatus === "finished" ? 1 : round.progress01) * 1000) / 10}%` }} />
+          <div className="relative h-2 rounded-md bg-white/10 overflow-hidden border border-white/10">
+            <div className="absolute inset-y-0 left-0 bg-white" style={{ width: `${Math.round((roomStatus === "finished" ? 1 : round.progress01) * 1000) / 10}%` }} />
           </div>
           <div className="grid grid-cols-2 gap-2 text-xs">
-            <div className="rounded border border-white/20 bg-black/25 px-3 py-2">
+            <div className="rounded-xl border border-white/8 bg-white/3 px-3 py-2">
               Time
-              <div className="mt-0.5 text-lg font-semibold tabular-nums text-[#facc15]">{secondsLeft}s</div>
+              <div className="mt-0.5 text-lg font-semibold tabular-nums text-white">{secondsLeft}s</div>
             </div>
-            <div className="rounded border border-white/20 bg-black/25 px-3 py-2">
+            <div className="rounded-xl border border-white/8 bg-white/3 px-3 py-2">
               Score
-              <div className="mt-0.5 text-lg font-semibold tabular-nums text-[#facc15]">{catches}</div>
+              <div className="mt-0.5 text-lg font-semibold tabular-nums text-white">{catches}</div>
             </div>
           </div>
         </div>
 
         <div className="space-y-2">
-          <div className="flex items-center justify-between gap-2">
-            <div className="text-sm font-medium text-[#facc15]">Race Track Leaderboard</div>
+          <div className="flex items-center justify-between gap-2 pb-5">
+            <div className="text-sm font-medium text-white">Race Track Leaderboard</div>
             <div className="text-xs text-white/80 tabular-nums">
               {isCountdown ? `Starts in ${countdownDisplay}s` : roomStatus === "playing" ? `${secondsLeft}s left` : roundLabel}
             </div>
@@ -320,15 +320,15 @@ export function ChopstickCatchGame({
                   <div key={p.id} className="space-y-1.5">
                     <div className="flex items-center justify-between gap-2">
                       <div className="flex items-center gap-2 min-w-0">
-                        <div className="text-xs w-5 text-center font-semibold text-[#facc15]">{rank}</div>
+                        <div className="text-xs w-5 text-center font-semibold text-white">{rank}</div>
                         <div className="w-40 text-sm font-semibold truncate text-white">
                           {p.name}
                           {p.isHost ? " (host)" : ""}
                         </div>
                       </div>
-                      {isRoundOver && <div className="text-xs tabular-nums text-[#facc15]">{p.count} catches</div>}
+                      {isRoundOver && <div className="text-xs tabular-nums text-white">{p.count} catches</div>}
                     </div>
-                    <div className="relative h-10 rounded-md bg-white/10 overflow-hidden border border-white/30">
+                    <div className="relative h-10 rounded-md bg-white/10 overflow-hidden border border-white/10">
                       <div className="absolute inset-y-0 left-0 rounded-r-md" style={{ background: `linear-gradient(90deg, ${startColor} 0%, ${endColor} 100%)`, width: `${fillPct}%` }} />
                       <div className="absolute top-1/2" style={{ left: `${avatarLeftPct}%`, transform: "translate(-50%, -50%)" }} title={p.name}>
                         <RoomPlayerAvatar name={p.name} avatarUrl={p.avatarUrl} accent={startColor} className="h-8 w-8" />
@@ -347,7 +347,7 @@ export function ChopstickCatchGame({
         </div>
 
         {isRoundOver && winnerBannerText && (
-          <div className="border border-[#eab308]/70 rounded-md bg-black/30 p-3 text-center animate-pulse">
+          <div className="border border-white/10 rounded-xl bg-white/5 p-3 text-center animate-pulse">
             <div className="text-sm font-medium">{winnerBannerText}</div>
           </div>
         )}

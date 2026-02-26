@@ -78,6 +78,7 @@ Run `yarn`.
 
 ```sh
 npm run setup --workspace packages/backend
+pnpm install
 ```
 
 The script will log you into Convex if you aren't already and prompt you to
@@ -116,6 +117,7 @@ Run the following command to run both the web and mobile apps:
 
 ```sh
 npm run dev
+pnpm dev
 ```
 
 This will allow you to use the ⬆ and ⬇ keyboard keys to see logs for each
@@ -129,6 +131,7 @@ In order to both deploy the frontend and Convex, run this as the build command f
 
 ```sh
 cd ../../packages/backend && npx convex deploy --cmd 'cd ../../apps/web && turbo run build' --cmd-url-env-var-name NEXT_PUBLIC_CONVEX_URL
+
 ```
 
 There is a vercel.json file in the apps/web directory with this configuration for Vercel.

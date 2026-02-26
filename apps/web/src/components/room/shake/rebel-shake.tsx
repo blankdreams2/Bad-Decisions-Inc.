@@ -11,7 +11,7 @@ import { useShakeLeaderboard, type ShakeLeaderboardPlayer } from '@/hooks/use-sh
 import { useSyncedRound } from '@/hooks/use-synced-round'
 import { api } from '@packages/backend/convex/_generated/api'
 
-export function ShakeRace({
+export const RebelShake = ({
   code,
   roomStatus,
   roomStartedAt,
@@ -33,7 +33,7 @@ export function ShakeRace({
   isApprovedGuest: boolean
   guestId: string | null
   durationMs?: number
-}) {
+}) => {
   const updateShakeProgress = useMutation(api.players.updateShakeProgress)
 
   const {
@@ -152,26 +152,22 @@ export function ShakeRace({
 
   return (
     <div className="pt-3 border-t">
-      <div className="relative overflow-hidden rounded-xl border border-[#eab308]/55 bg-[#171a20] p-4 space-y-4 text-white">
-        <div className="relative z-10 flex w-full items-center justify-center">
-          <ShakePhoneScene isShaking={isRoundRunning} compact />
-        </div>
-
-        <div className="relative z-10 rounded-md border border-white/20 bg-black/30 px-3 py-2 text-xs text-[#facc15]">
-          Mini party game by <span className="font-semibold">Bad Decisions Inc</span>
+      <div className="relative overflow-hidden rounded-xl border border-white/8 bg-surface p-4 space-y-4 text-white">
+        <div className="relative z-10">
+          <ShakePhoneScene isShaking={isRoundRunning} />
         </div>
 
         <div className="relative z-10 space-y-2">
           <div className="flex items-center justify-between gap-3">
-            <div className="text-sm font-medium text-[#facc15]">Shake</div>
+            <div className="text-sm font-medium text-white">Shake</div>
             <div className="text-xs text-white/80">
               {roomStatus === 'playing' ? 'LIVE' : roomStatus === 'lobby' ? 'LOBBY' : roomStatus}
             </div>
           </div>
 
-          <div className="relative h-2 rounded-md bg-white/10 overflow-hidden border border-white/30">
+          <div className="relative h-2 rounded-md bg-white/10 overflow-hidden border border-white/10">
             <div
-              className="absolute inset-y-0 left-0 bg-[#eab308]"
+              className="absolute inset-y-0 left-0 bg-white"
               style={{ width: `${Math.round((roomStatus === 'finished' ? 1 : round.progress01) * 1000) / 10}%` }}
             />
           </div>
@@ -209,9 +205,9 @@ export function ShakeRace({
             </div>
 
             {isCountdown && (
-              <div className="rounded-md border border-[#eab308]/70 bg-black/40 p-4 text-center">
-                <div className="text-xs uppercase tracking-wide text-[#facc15]">Everyone ready?</div>
-                <div className="text-4xl font-black tabular-nums text-[#fde047]">{countdownDisplaySeconds}</div>
+              <div className="rounded-md border border-white/15 bg-white/5 p-4 text-center">
+                <div className="text-xs uppercase tracking-wide text-white/50">Everyone ready?</div>
+                <div className="text-4xl font-black tabular-nums text-white">{countdownDisplaySeconds}</div>
               </div>
             )}
 
@@ -234,8 +230,8 @@ export function ShakeRace({
             )}
 
             <div className="space-y-2">
-              <div className="flex items-center justify-between gap-2">
-                <div className="text-sm font-medium text-[#facc15]">Race Track Leaderboard</div>
+              <div className="flex items-center justify-between gap-2 pb-5">
+                <div className="text-sm font-medium text-white">Race Track Leaderboard</div>
                 <div className="text-xs text-white/80 tabular-nums">
                   {isCountdown
                     ? `Starts in ${countdownDisplaySeconds}s`
@@ -261,16 +257,16 @@ export function ShakeRace({
                       <div key={p.id} className="space-y-1.5">
                         <div className="flex items-center justify-between gap-2">
                           <div className="flex items-center gap-2 min-w-0">
-                            <div className="text-xs w-5 text-center font-semibold text-[#facc15]">{rank}</div>
+                            <div className="text-xs w-5 text-center font-semibold text-white">{rank}</div>
                             <div className="w-40 text-sm font-semibold truncate text-white">
                               {p.name}
                               {p.isHost ? ' (host)' : ''}
                             </div>
                           </div>
-                          {isRoundOver && <div className="text-xs tabular-nums text-[#facc15]">{p.count} shakes</div>}
+                          {isRoundOver && <div className="text-xs tabular-nums text-white">{p.count} shakes</div>}
                         </div>
 
-                        <div className="relative h-10 rounded-md bg-white/10 overflow-hidden border border-white/30">
+                        <div className="relative h-10 rounded-md bg-white/10 overflow-hidden border border-white/10">
                           <div
                             className="absolute inset-y-0 left-0 rounded-r-md"
                             style={{
@@ -310,13 +306,13 @@ export function ShakeRace({
             </div>
 
             {isRoundOver && winnerBannerText && (
-              <div className="border border-[#eab308]/70 rounded-md bg-black/30 p-3 text-center animate-pulse">
+              <div className="border border-white/10 rounded-xl bg-white/5 p-3 text-center animate-pulse">
                 <div className="text-sm font-medium">{winnerBannerText}</div>
               </div>
             )}
 
             {isRoundRunning && (
-              <div className="border border-fuchsia-300/50 rounded-md bg-black/30 p-3 text-center font-medium animate-pulse">
+              <div className="border border-white/15 rounded-md bg-white/5 p-3 text-center text-white font-bold animate-pulse">
                 SHAKE YOUR PHONE!!
               </div>
             )}
