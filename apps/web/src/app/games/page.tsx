@@ -22,9 +22,9 @@ export default function GamesPage() {
       {/* Nav */}
       <nav className="container mx-auto flex items-center justify-between px-4 pt-4 sm:px-6 sm:pt-6">
         <Link href="/" className="group flex items-center gap-2 sm:gap-3">
-          <BdiLogo className="text-gold transition-transform duration-300 group-hover:scale-110" size={28} />
+          <BdiLogo multicolor className="transition-transform duration-300 group-hover:scale-110" size={28} />
           <div className="flex flex-col leading-none">
-            <span className="font-syne text-xs font-extrabold tracking-wide text-gold-light transition-all duration-300 group-hover:text-gold group-hover:glow-gold-bright sm:text-sm md:text-lg">
+            <span className="font-syne text-xs font-extrabold tracking-wide text-white transition-all duration-300 group-hover:text-gold group-hover:glow-gold-bright sm:text-sm md:text-lg">
               BAD DECISIONS
             </span>
             <span className="font-syne text-[8px] tracking-[0.2em] text-smoke transition-all duration-300 group-hover:text-gold-dim group-hover:glow-gold-bright sm:text-[10px]">
