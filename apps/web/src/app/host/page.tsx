@@ -1,51 +1,47 @@
 'use client'
 
-import { useUser } from '@clerk/nextjs'
+import { useUser, useClerk } from '@clerk/nextjs'
 import { useMutation, useQuery } from 'convex/react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import QRCode from 'react-qr-code'
 
+import BdiLogo from '@/components/common/bdiLogo'
 import { Button } from '@/components/common/button'
 import { api } from '@packages/backend/convex/_generated/api'
 
 type Game = 'shake' | 'flip' | 'tap' | 'kanpai' | 'chopstick'
 
-function formatGame(game: Game | 'unknown' | undefined) {
-  if (game === 'shake') return 'Rebel Shake'
-  if (game === 'flip') return 'Vegas Pan Flip'
-  if (game === 'tap') return 'Poker Chip Tap'
-  if (game === 'kanpai') return 'Kanpai Timing'
-  if (game === 'chopstick') return 'Chopstick Catch'
-  return 'Unknown'
+const GAME_META: Record<Game, { label: string; accent: string; border: string; bg: string; dot: string }> = {
+  shake:     { label: 'Rebel Shake',     accent: 'text-neon',     border: 'border-neon/20',     bg: 'bg-neon/8',     dot: 'bg-neon' },
+  flip:      { label: 'Vegas Pan Flip',  accent: 'text-electric', border: 'border-electric/20', bg: 'bg-electric/8', dot: 'bg-electric' },
+  tap:       { label: 'Poker Chip Tap',  accent: 'text-gold-light', border: 'border-gold/20',   bg: 'bg-gold/8',    dot: 'bg-gold' },
+  kanpai:    { label: 'Kanpai Timing',   accent: 'text-royal',    border: 'border-royal/20',    bg: 'bg-royal/8',    dot: 'bg-royal' },
+  chopstick: { label: 'Chopstick Catch', accent: 'text-electric', border: 'border-electric/20', bg: 'bg-electric/8', dot: 'bg-electric' },
 }
 
+const GAMES: Game[] = ['shake', 'flip', 'tap', 'kanpai', 'chopstick']
+
 export default function HostPage() {
-  // this could become a hook or a contex what not
   const { isLoaded, user } = useUser()
 
   if (!isLoaded) {
     return (
-      <main className="min-h-dvh p-4 max-w-3xl w-full mx-auto space-y-6">
-        <div className="text-sm text-muted-foreground">Loading…</div>
+      <main className="flex min-h-dvh items-center justify-center bg-midnight">
+        <div className="h-6 w-6 animate-spin rounded-full border-2 border-white/20 border-t-white" />
       </main>
     )
   }
 
-  return <HostPageSignedIn userEmail={user?.primaryEmailAddress?.emailAddress} />
+  return <HostDashboard userName={user?.firstName ?? 'Host'} userImage={user?.imageUrl} />
 }
 
-function HostPageSignedIn({ userEmail }: { userEmail: string | undefined }) {
-  const router = useRouter()
+function HostDashboard({ userName, userImage }: { userName: string; userImage?: string }) {
+  const { signOut } = useClerk()
   const [origin, setOrigin] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [creating, setCreating] = useState<Record<Game, boolean>>({
-    shake: false,
-    flip: false,
-    tap: false,
-    kanpai: false,
-    chopstick: false,
+    shake: false, flip: false, tap: false, kanpai: false, chopstick: false,
   })
 
   const counts = useQuery(api.rooms.hostRoomCountsByGame, { activeOnly: true })
@@ -54,175 +50,183 @@ function HostPageSignedIn({ userEmail }: { userEmail: string | undefined }) {
   const deleteRoom = useMutation(api.rooms.deleteRoom)
   const [deletingCode, setDeletingCode] = useState<string | null>(null)
 
-  useEffect(() => {
-    setOrigin(window.location.origin)
-  }, [])
+  useEffect(() => { setOrigin(window.location.origin) }, [])
 
-  //
   async function onCreate(game: Game) {
     try {
       setError(null)
-      setCreating((prev) => ({ ...prev, [game]: true }))
+      setCreating((p) => ({ ...p, [game]: true }))
       await createRoom({ game })
     } catch (err) {
-      const message = err instanceof Error ? err.message : String(err)
-      setError(message)
+      setError(err instanceof Error ? err.message : String(err))
     } finally {
-      setCreating((prev) => ({ ...prev, [game]: false }))
+      setCreating((p) => ({ ...p, [game]: false }))
     }
   }
 
-  async function onDeleteRoom(code: string) {
-    const confirmed = window.confirm(`Delete room ${code}? This cannot be undone.`)
-    if (!confirmed) return
+  async function onDelete(code: string) {
+    if (!window.confirm(`Delete room ${code}?`)) return
     try {
       setError(null)
       setDeletingCode(code)
       await deleteRoom({ code })
     } catch (err) {
-      const message = err instanceof Error ? err.message : String(err)
-      setError(message)
+      setError(err instanceof Error ? err.message : String(err))
     } finally {
       setDeletingCode(null)
     }
   }
 
   return (
-    <main className="min-h-dvh p-4 bg-[#0f1115]">
-      <div className="max-w-3xl w-full mx-auto space-y-8 text-zinc-100">
-        <div className="space-y-2">
-          <h1 className="text-3xl font-semibold text-[#facc15]">Host Control 🎮</h1>
-          <p className="text-sm text-zinc-300">Create and manage your party game rooms.</p>
-          {userEmail && <p className="text-xs text-[#facc15]">Signed in as {userEmail}</p>}
-        </div>
-
-        <section className="space-y-3">
-          <div className="flex items-baseline justify-between gap-4">
-            <h2 className="text-lg font-medium text-[#facc15]">Games</h2>
-            {/* <div className="text-xs text-zinc-400">UNLV red theme rooms</div> */}
+    <main className="min-h-dvh bg-midnight">
+      {/* ── Top bar ── */}
+      <header className="sticky top-0 z-30 border-b border-white/5 bg-midnight/80 backdrop-blur-xl">
+        <div className="mx-auto flex max-w-lg items-center justify-between px-4 py-3">
+          <Link href="/" className="group flex items-center gap-2">
+            <BdiLogo multicolor size={24} />
+            <span className="font-syne text-xs font-bold tracking-wide text-white sm:text-sm">
+              Dashboard
+            </span>
+          </Link>
+          <div className="flex items-center gap-3">
+            {userImage && (
+              <img src={userImage} alt="" className="h-7 w-7 rounded-full border border-white/10" />
+            )}
+            <button
+              onClick={() => void signOut()}
+              className="text-[11px] text-white/40 transition-colors hover:text-white"
+            >
+              Sign out
+            </button>
           </div>
+        </div>
+      </header>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            <div className="border border-white/20 bg-black/25 rounded-md p-4 space-y-3">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <div className="font-medium text-[#facc15]">📳 Rebel Shake</div>
-                  <div className="text-sm text-zinc-300">Active rooms: {counts ? counts.shake : '…'}</div>
-                </div>
-                <Button onClick={() => onCreate('shake')} disabled={creating.shake}>
-                  {creating.shake ? 'Creating…' : 'Create room'}
-                </Button>
-              </div>
-              {/* <div className="text-xs text-muted-foreground">
-              Room URL format (for QR later): {origin ? `${origin}/room/XXXXXX` : "/room/XXXXXX"}
-            </div> */}
-            </div>
+      <div className="mx-auto max-w-lg px-4 pb-8">
+        {/* ── Greeting ── */}
+        <section className="pt-6 pb-5">
+          <p className="text-sm text-white/40">Welcome back,</p>
+          <h1 className="font-syne text-2xl font-extrabold tracking-tight text-white">
+            {userName}
+          </h1>
+        </section>
 
-            <div className="border border-white/20 bg-black/25 rounded-md p-4 space-y-3">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <div className="font-medium text-[#facc15]">🍳 Vegas Pan Flip</div>
-                  <div className="text-sm text-zinc-300">Active rooms: {counts ? counts.flip : '…'}</div>
+        {/* ── Create game ── */}
+        <section>
+          <h2 className="mb-3 text-xs font-semibold tracking-widest text-white/30 uppercase">
+            New Game
+          </h2>
+          <div className="space-y-2">
+            {GAMES.map((game) => {
+              const meta = GAME_META[game]
+              const count = counts ? (counts as Record<string, number>)[game] ?? 0 : null
+              return (
+                <div
+                  key={game}
+                  className={`flex items-center justify-between rounded-2xl border p-4 transition-colors ${meta.border} ${meta.bg}`}
+                >
+                  <div className="flex items-center gap-3">
+                    <span className={`h-2 w-2 rounded-full ${meta.dot}`} />
+                    <div>
+                      <span className={`text-sm font-semibold ${meta.accent}`}>{meta.label}</span>
+                      <p className="text-[11px] text-white/30">
+                        {count !== null ? `${count} active` : '...'}
+                      </p>
+                    </div>
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="primary"
+                    onClick={() => onCreate(game)}
+                    disabled={creating[game]}
+                  >
+                    {creating[game] ? 'Creating...' : 'Create'}
+                  </Button>
                 </div>
-                <Button onClick={() => onCreate('flip')} disabled={creating.flip}>
-                  {creating.flip ? 'Creating…' : 'Create room'}
-                </Button>
-              </div>
-              {/* <div className="text-xs text-muted-foreground">
-              Room URL format (for QR later): {origin ? `${origin}/room/XXXXXX` : "/room/XXXXXX"}
-            </div> */}
-            </div>
-
-            <div className="border border-white/20 bg-black/25 rounded-md p-4 space-y-3">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <div className="font-medium text-[#facc15]">🪙 Poker Chip Tap</div>
-                  <div className="text-sm text-zinc-300">Active rooms: {counts ? counts.tap : '…'}</div>
-                </div>
-                <Button onClick={() => onCreate('tap')} disabled={creating.tap}>
-                  {creating.tap ? 'Creating…' : 'Create room'}
-                </Button>
-              </div>
-            </div>
-
-            <div className="border border-white/20 bg-black/25 rounded-md p-4 space-y-3">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <div className="font-medium text-[#facc15]">🍺 Kanpai Timing</div>
-                  <div className="text-sm text-zinc-300">Active rooms: {counts ? (counts as any).kanpai : '…'}</div>
-                </div>
-                <Button onClick={() => onCreate('kanpai')} disabled={creating.kanpai}>
-                  {creating.kanpai ? 'Creating…' : 'Create room'}
-                </Button>
-              </div>
-            </div>
-
-            <div className="border border-white/20 bg-black/25 rounded-md p-4 space-y-3">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <div className="font-medium text-[#facc15]">🥢 Chopstick Catch</div>
-                  <div className="text-sm text-zinc-300">Active rooms: {counts ? (counts as any).chopstick : '…'}</div>
-                </div>
-                <Button onClick={() => onCreate('chopstick')} disabled={creating.chopstick}>
-                  {creating.chopstick ? 'Creating…' : 'Create room'}
-                </Button>
-              </div>
-            </div>
+              )
+            })}
           </div>
         </section>
 
+        {/* ── Error ── */}
         {error && (
-          <div className="border border-white/20 bg-black/30 rounded-md p-3 text-sm">
-            <div className="font-medium">Error</div>
-            <div className="text-white/70 wrap-break-word">{error}</div>
+          <div className="mt-4 rounded-xl border border-neon/20 bg-neon/5 p-3 text-xs text-neon">
+            {error}
           </div>
         )}
 
-        <section className="space-y-3">
-          <h2 className="text-lg font-medium text-[#facc15]">Your rooms</h2>
+        {/* ── Rooms feed ── */}
+        <section className="mt-8">
+          <h2 className="mb-3 text-xs font-semibold tracking-widest text-white/30 uppercase">
+            Your Rooms
+          </h2>
 
           {!rooms ? (
-            <div className="text-sm text-zinc-300">Loading rooms…</div>
+            <div className="flex justify-center py-8">
+              <div className="h-5 w-5 animate-spin rounded-full border-2 border-white/10 border-t-white/50" />
+            </div>
           ) : rooms.length === 0 ? (
-            <div className="text-sm text-zinc-300">No rooms yet. Create one above.</div>
+            <div className="rounded-2xl border border-white/5 bg-surface p-8 text-center">
+              <p className="text-sm text-white/30">No rooms yet</p>
+              <p className="mt-1 text-xs text-white/15">Create a game above to get started</p>
+            </div>
           ) : (
-            <div className="border border-white/20 rounded-md divide-y divide-white/10 bg-black/25">
+            <div className="space-y-3">
               {rooms.map((room) => {
                 const roomUrl = origin ? `${origin}/room/${room.code}` : `/room/${room.code}`
+                const meta = GAME_META[room.game as Game] ?? GAME_META.shake
+                const isActive = room.status === 'lobby' || room.status === 'playing'
+
                 return (
-                  <div key={room._id} className="p-4 space-y-2">
-                    <div className="flex flex-wrap items-center justify-between gap-3">
-                      <div className="space-y-0.5">
-                        <div className="font-medium">
-                          {formatGame(room.game)} · {room.code}
+                  <div
+                    key={room._id}
+                    className="overflow-hidden rounded-2xl border border-white/8 bg-surface"
+                  >
+                    {/* Room header */}
+                    <div className="flex items-center justify-between p-4 pb-3">
+                      <div className="flex items-center gap-2.5">
+                        <span className={`h-2 w-2 rounded-full ${isActive ? 'bg-green-400 shadow-[0_0_8px_rgba(74,222,128,0.5)]' : 'bg-white/15'}`} />
+                        <div>
+                          <span className={`text-sm font-semibold ${meta.accent}`}>
+                            {meta.label}
+                          </span>
+                          <span className="ml-2 font-mono text-xs text-white/30">{room.code}</span>
                         </div>
-                        <div className="text-sm text-zinc-300">Status: {room.status}</div>
+                      </div>
+                      <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-medium ${isActive ? 'bg-green-500/10 text-green-400' : 'bg-white/5 text-white/25'}`}>
+                        {room.status}
+                      </span>
+                    </div>
+
+                    {/* QR + actions */}
+                    <div className="flex items-end justify-between border-t border-white/5 px-4 py-3">
+                      <div className="shrink-0 rounded-lg bg-white p-1.5">
+                        {origin ? (
+                          <QRCode value={roomUrl} size={56} />
+                        ) : (
+                          <div className="h-14 w-14" />
+                        )}
                       </div>
 
-                      <div className="flex w-full items-center justify-between gap-3 sm:w-auto sm:justify-end">
-                        {/* QR code */}
-                        <div className="border rounded-md p-2 ml-6 bg-white shrink-0" title="Scan to open room URL">
-                          {origin ? <QRCode value={roomUrl} size={84} /> : <div className="h-[84px] w-[84px]" />}
-                        </div>
-
-                        <div className="flex items-center gap-2">
-                          <Button asChild variant="outline" size="default">
-                            <Link href={`/host/rooms/${room.code}`}>Manage</Link>
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="default"
-                            className="text-yellow-200 border-yellow-300/80 hover:bg-yellow-300/15"
-                            onClick={() => onDeleteRoom(room.code)}
-                            disabled={deletingCode === room.code}
-                          >
-                            {deletingCode === room.code ? 'Deleting…' : 'Delete'}
-                          </Button>
-                        </div>
+                      <div className="flex gap-2">
+                        <Button asChild size="sm" variant="outline">
+                          <Link href={`/host/rooms/${room.code}`}>Manage</Link>
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => onDelete(room.code)}
+                          disabled={deletingCode === room.code}
+                        >
+                          {deletingCode === room.code ? '...' : 'Delete'}
+                        </Button>
                       </div>
                     </div>
 
-                    <div className="text-xs text-zinc-400 break-all">{roomUrl}</div>
+                    {/* URL */}
+                    <div className="border-t border-white/5 px-4 py-2">
+                      <p className="truncate text-[10px] text-white/15">{roomUrl}</p>
+                    </div>
                   </div>
                 )
               })}
@@ -230,9 +234,12 @@ function HostPageSignedIn({ userEmail }: { userEmail: string | undefined }) {
           )}
         </section>
 
-        <Link className="text-sm underline text-[#facc15]" href="/">
-          Back
-        </Link>
+        {/* ── Back link ── */}
+        <div className="mt-8 pb-4 text-center">
+          <Link href="/" className="text-xs text-white/25 transition-colors hover:text-white/50">
+            Back to home
+          </Link>
+        </div>
       </div>
     </main>
   )
