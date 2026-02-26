@@ -1,7 +1,9 @@
 'use client'
 
 import { ACCENT_STYLES, GAMES } from '@/data/hero-data'
+import type { GameAccent } from '@/data/hero-data'
 import BdiLogo from '@/components/common/bdiLogo'
+import ModelPreview from '@/components/games/model-preview'
 import { Pointer } from '@/components/ui/pointer'
 import Link from 'next/link'
 
@@ -10,6 +12,13 @@ const accentBg: Record<string, string> = {
   electric: 'bg-electric/8',
   gold: 'bg-gold/8',
   royal: 'bg-royal/8',
+}
+
+const accentHex: Record<GameAccent, string> = {
+  neon: '#FF2D6B',
+  electric: '#00E5FF',
+  gold: '#F5B800',
+  royal: '#8B5CF6',
 }
 
 const accentNumber: Record<string, string> = {
@@ -64,13 +73,15 @@ export default function GamesPage() {
                   <span className="text-2xl">{game.emoji}</span>
                 </Pointer>
 
-                <div className={`flex flex-1 items-center justify-center py-6 sm:py-8 ${accentBg[game.accent]}`}>
-                  <span className="text-5xl transition-transform duration-300 group-hover/card:scale-125 sm:text-6xl lg:text-7xl">
-                    {game.emoji}
-                  </span>
+                {/* model */}
+                <div className={`relative min-h-[140px] flex-1 min-[480px]:min-h-[120px] ${accentBg[game.accent]}`}>
+                  <ModelPreview
+                    modelPath={game.model}
+                    accentColor={accentHex[game.accent]}
+                  />
                 </div>
 
-                <div className="relative shrink-0 p-3 sm:p-4">
+                <div className="relative h-[90px] shrink-0 p-3 sm:h-[130px] sm:p-4">
                   <span className={`font-syne absolute top-2 right-3 text-2xl font-black sm:text-3xl ${accentNumber[game.accent]}`}>
                     {String(i + 1).padStart(2, '0')}
                   </span>
